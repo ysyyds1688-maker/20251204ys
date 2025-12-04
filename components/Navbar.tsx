@@ -20,11 +20,11 @@ export const Navbar = () => {
   const navItems = [
     { path: '/', label: '首頁' },
     { path: '/forum', label: '討論區' },
-    { path: '/games/sports', label: '體育', banner: '/images/promotions/體育 banner2.png' },
-    { path: '/games/baccarat', label: '真人', banner: '/images/promotions/真人banner2.png' },
-    { path: '/games/electronic', label: '電子', banner: '/images/promotions/電子banner1.png' },
-    { path: '/games/poker', label: '棋牌', banner: '/images/promotions/棋牌banner1.png' },
-    { path: '/promotions', label: '優惠', banner: '/images/promotions/優惠banner1.png' },
+    { path: '/games/sports', label: '體育', banner: '/images/banners/體育 banner2.png' },
+    { path: '/games/baccarat', label: '真人', banner: '/images/banners/真人banner2.png' },
+    { path: '/games/electronic', label: '電子', banner: '/images/banners/電子banner1.png' },
+    { path: '/games/poker', label: '棋牌', banner: '/images/banners/棋牌banner1.png' },
+    { path: '/promotions', label: '優惠', banner: '/images/banners/優惠banner1.png' },
   ];
 
   const isActive = (path: string) => {
