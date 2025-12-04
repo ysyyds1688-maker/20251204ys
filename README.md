@@ -12,22 +12,25 @@
 本專案包含完整的 React 程式碼以及數份關鍵的規劃文件，請接手人員務必詳閱：
 
 ### 1. 技術規格文件
-*   📄 **`WP_DEVELOPMENT_SPEC.md`** (核心文件): 詳細定義了未來 WordPress 網站的架構、CPT (自定義文章類型)、Taxonomies (分類法) 與 ACF 欄位規格。**開發 WP 主題前必讀。**
-*   📄 **`WP_LAUNCH_SEO_CHECKLIST.md`**: WordPress 正式站上線前的 SEO 檢查清單 (包含解除 Noindex、Sitemap 設定等)。
-*   📄 **`ys-seo-structure.md`**: 原始 SEO 架構規劃書。
+*   📄 **`docs/WP_DEVELOPMENT_SPEC.md`** (核心文件): 詳細定義了未來 WordPress 網站的架構、CPT (自定義文章類型)、Taxonomies (分類法) 與 ACF 欄位規格。**開發 WP 主題前必讀。**
+*   📄 **`docs/WP_LAUNCH_SEO_CHECKLIST.md`**: WordPress 正式站上線前的 SEO 檢查清單 (包含解除 Noindex、Sitemap 設定等)。
+*   📄 **`docs/ys-seo-structure.md`**: 原始 SEO 架構規劃書。
 
 ### 2. 圖片與資源
-*   📄 **`圖片資源清單.md`**: 完整的圖片使用清單與狀態追蹤（✅ 41 張已完成，❌ 3 張待補充）。
-*   📄 **`IMAGE_REQUIREMENTS.md`**: 全站圖片尺寸規範與 AI 生成提示詞。
+*   📄 **`docs/圖片資源清單.md`**: 完整的圖片使用清單與狀態追蹤（✅ 41 張已完成，❌ 3 張待補充）。
+*   📄 **`docs/IMAGE_REQUIREMENTS.md`**: 全站圖片尺寸規範與 AI 生成提示詞。
 *   📂 **`public/images/`**: 存放已生成的圖片素材，已建立完整資料夾結構（articles, promotions, guides, recommendations, influencers）。
 
 ### 3. 程式碼結構
-*   `pages/`: 所有頁面組件
+*   `pages/`: 所有頁面組件（統一位置）
     *   `pages/forum/`: **論壇功能原型** (首頁、版塊、內文)。
     *   `pages/games/`: 遊戲專區頁面。
     *   `pages/guides/`: 攻略教學頁面。
 *   `components/`: 共用組件 (Navbar, Footer, SEO, Breadcrumb)。
-*   `src/data/`: 模擬資料 (如 `mockForumData.ts` 用於生成論壇假資料)。
+*   `src/`: 源碼目錄
+    *   `src/services/`: 服務層（如 `ArticleService.ts` 用於讀取 Google Sheet 文章）。
+    *   `src/data/`: 模擬資料 (如 `mockForumData.ts` 用於生成論壇假資料)。
+*   `docs/`: 所有技術文件與規劃文件（統一位置）
 
 ---
 
@@ -62,7 +65,7 @@ npm run dev
 2.  **`index.html`**: 包含 `<meta name="robots" content="noindex, nofollow" />`。
 3.  **`components/SEO.tsx`**: 所有頁面強制輸出 `noindex` meta tag。
 
-> **注意**: 未來遷移到 WordPress 正式站時，請務必依照 `WP_LAUNCH_SEO_CHECKLIST.md` 解除這些防護。
+> **注意**: 未來遷移到 WordPress 正式站時，請務必依照 `docs/WP_LAUNCH_SEO_CHECKLIST.md` 解除這些防護。
 
 ---
 
@@ -104,7 +107,7 @@ public/images/
 └── influencers/         # 網紅頭像（待補充3張）❌
 ```
 
-> 📄 **詳細清單**：請參考 `圖片資源清單.md` 查看完整的圖片使用狀況與規格說明。
+> 📄 **詳細清單**：請參考 `docs/圖片資源清單.md` 查看完整的圖片使用狀況與規格說明。
 
 ---
 
@@ -116,7 +119,7 @@ public/images/
 - ✅ 建立完整的圖片資料夾結構（articles, promotions, guides, recommendations, influencers）
 - ✅ 整理並移動所有已使用的圖片至 `已使用/` 資料夾
 - ✅ 完成 41 張圖片的路徑更新與分類
-- ✅ 建立 `圖片資源清單.md` 完整追蹤文件
+- ✅ 建立 `docs/圖片資源清單.md` 完整追蹤文件
 - ⚠️ 待補充：3 張網紅頭像
 
 #### 2. YS 頁面文章完善（100% 完成）
@@ -124,7 +127,7 @@ public/images/
 - ✅ **客服頁面** (`/trust/contact`)：完整內容 + ContactPage schema
 - ✅ **出金保障頁面** (`/trust/security`)：完整內容 + FAQ schema
 - ✅ 所有頁面包含完整的 SEO 優化（meta 標籤、結構化數據、內部連結）
-- ✅ 建立 `YS頁面文章檢查清單.md` 追蹤文件
+- ✅ 建立 `docs/YS頁面文章檢查清單.md` 追蹤文件
 
 #### 3. SEO 優化
 - ✅ 所有頁面包含完整的 meta 標籤
@@ -147,10 +150,10 @@ public/images/
 ## 🤝 交接事項
 
 1.  請先確認 React 站的 `/forum` 頁面，了解期望的論壇互動流程與視覺風格。
-2.  依照 `WP_DEVELOPMENT_SPEC.md` 建立 WordPress 的後台欄位。
+2.  依照 `docs/WP_DEVELOPMENT_SPEC.md` 建立 WordPress 的後台欄位。
 3.  使用 `src/data/mockForumData.ts` 中的內容作為初期填充資料。
 4.  圖片素材請直接從 `public/images` 移植使用，已建立完整資料夾結構。
-5.  **補充缺失的圖片**：僅需補充 3 張網紅頭像，詳細請參考 `圖片資源清單.md`。
+5.  **補充缺失的圖片**：僅需補充 3 張網紅頭像，詳細請參考 `docs/圖片資源清單.md`。
 
 ---
 
@@ -160,7 +163,7 @@ public/images/
 - ✅ **圖片資源整理完成**：41 張圖片已完成分類與路徑更新，建立完整資料夾結構
 - ✅ **YS 頁面文章完善**：關於我們、客服、出金保障三個頁面已完成內容與 SEO 優化
 - ✅ **SEO 優化完成**：所有頁面包含結構化數據、meta 標籤、內部連結
-- ✅ **文件建立**：`圖片資源清單.md`、`YS頁面文章檢查清單.md`
+- ✅ **文件建立**：`docs/圖片資源清單.md`、`docs/YS頁面文章檢查清單.md`
 - ⚠️ **待補充**：3 張網紅頭像
 
 ### 2025-01-XX (前期更新)
@@ -188,10 +191,10 @@ public/images/
     - 論壇分類頁 `/forum/c/:id`
 
 - **n8n 自動發文工作流**
-  - 已串接：Google Sheets → Serper.dev 搜尋 → AI Agent（OpenAI/Gemini）→ Code 節點（`n8n_Code節點_最終版本.txt`）→ Google Sheets 寫回
-  - AI Prompt 已整理成多個版本，最終使用：`n8n_AI_Agent_Prompt_完整版_含免責聲明.md`
+  - 已串接：Google Sheets → Serper.dev 搜尋 → AI Agent（OpenAI/Gemini）→ Code 節點 → Google Sheets 寫回
+  - AI Prompt 已整理成多個版本（相關文件請參考 `docs/` 資料夾）
     - 動態年份處理（根據搜尋結果或使用「目前/最新」等相對時間）
-    - 風格智能匹配（`n8n_Code節點_風格智能匹配.txt`）
+    - 風格智能匹配
     - 免責聲明內嵌在文章 conclusion，前端只再顯示一次
   - Code 節點負責：
     - 解析 AI 回傳的 JSON（含處理 ```json 包裹、亂碼、前後雜訊）
@@ -212,9 +215,9 @@ public/images/
     - `ForumCategoryPage` 依 `Category` 與論壇分類對應篩選文章
 
 - **自動補充關鍵字工作流（規劃完成，Code 已就緒）**
-  - 文件：`n8n_自動補充關鍵字工作流指南.md`
+  - 文件：`docs/n8n_自動補充關鍵字工作流指南.md`
   - 方案 B（預定義列表，不用 AI）已提供完整 Code：
-    - Code 檔：`n8n_自動補充關鍵字_Code節點.txt`
+    - Code 檔：`docs/n8n_自動補充關鍵字_Code節點.txt`
     - 每個分類有一組關鍵字庫（娛樂城評價 / 優惠活動 / 遊戲攻略 / 防詐騙 / 綜合討論）
     - 支援去重：不會重複現有關鍵字
     - 直接輸出標準欄位：`Keyword` / `Category` / `GEO` / `Status=pending`
@@ -254,7 +257,7 @@ public/images/
 
 - **（可選）AI 版關鍵字補充**（低）  
   - 若之後要啟動 AI 生成關鍵字：  
-    - 使用 `n8n_自動補充關鍵字_AI_Prompt.md` 作為 AI Agent 的 Prompt  
-    - Code 解析：`n8n_自動補充關鍵字_AI生成版_Code節點.txt`  
+    - 使用 `docs/n8n_自動補充關鍵字_AI_Prompt.md` 作為 AI Agent 的 Prompt  
+    - Code 解析：`docs/n8n_自動補充關鍵字_AI生成版_Code節點.txt`  
     - 建議先小量測試，確認關鍵字品質與去重邏輯
 

@@ -1,0 +1,239 @@
+// n8n Code 節點：自動補充關鍵字（方案 B - 預定義列表）
+// 功能：從預定義關鍵字庫中選取，並與 Google Sheet 現有關鍵字去重
+
+// ============================================
+// 步驟 1：定義關鍵字庫（每個分類的預定義關鍵字）
+// ============================================
+
+const keywordLibraries = {
+  '娛樂城評價': [
+    'YS娛樂城評價',
+    'YS娛樂城出金',
+    'YS娛樂城安全嗎',
+    'YS娛樂城推薦',
+    'YS娛樂城詐騙',
+    'YS娛樂城不出金',
+    'YS娛樂城評價2025',
+    'YS娛樂城可靠嗎',
+    'YS娛樂城信譽',
+    'YS娛樂城玩家評價',
+    'YS娛樂城真實評價',
+    'YS娛樂城出金速度',
+    'YS娛樂城客服',
+    'YS娛樂城註冊',
+    'YS娛樂城優缺點',
+    'YS娛樂城比較',
+    'YS娛樂城合法嗎',
+    'YS娛樂城黑網',
+    'YS娛樂城評價PTT',
+    'YS娛樂城心得',
+    'YS娛樂城體驗',
+    'YS娛樂城評價Dcard',
+    'YS娛樂城評價真實',
+    'YS娛樂城評價2024',
+    'YS娛樂城評價2023',
+  ],
+  
+  '優惠活動': [
+    'YS娛樂城體驗金',
+    'YS娛樂城首存優惠',
+    'YS娛樂城註冊送',
+    'YS娛樂城免費體驗金',
+    'YS娛樂城新會員優惠',
+    'YS娛樂城優惠碼',
+    'YS娛樂城紅利',
+    'YS娛樂城返水',
+    'YS娛樂城週年慶',
+    'YS娛樂城活動',
+    'YS娛樂城優惠活動',
+    'YS娛樂城存款優惠',
+    'YS娛樂城出金優惠',
+    'YS娛樂城生日禮金',
+    'YS娛樂城推薦碼',
+    'YS娛樂城邀請碼',
+    'YS娛樂城VIP優惠',
+    'YS娛樂城限時優惠',
+    'YS娛樂城優惠2025',
+    'YS娛樂城優惠活動2025',
+    'YS娛樂城體驗金領取',
+    'YS娛樂城體驗金申請',
+    'YS娛樂城體驗金怎麼領',
+    'YS娛樂城體驗金條件',
+    'YS娛樂城體驗金限制',
+  ],
+  
+  '真人百家樂': [
+    'YS娛樂城真人百家樂',
+    'YS娛樂城DG真人',
+    'YS娛樂城真人視訊',
+    'YS娛樂城真人遊戲',
+    'YS娛樂城百家樂攻略',
+    'YS娛樂城百家樂技巧',
+    'YS娛樂城百家樂玩法',
+    'YS娛樂城真人百家樂評價',
+    'YS娛樂城真人百家樂推薦',
+    'YS娛樂城真人百家樂教學',
+    'YS娛樂城真人百家樂規則',
+    'YS娛樂城真人百家樂投注',
+    'YS娛樂城真人百家樂策略',
+    'YS娛樂城真人百家樂心得',
+    'YS娛樂城真人百家樂體驗',
+    'YS娛樂城真人百家樂平台',
+    'YS娛樂城真人百家樂系統',
+    'YS娛樂城真人百家樂優惠',
+    'YS娛樂城真人百家樂出金',
+    'YS娛樂城真人百家樂安全嗎',
+    'YS娛樂城真人百家樂詐騙',
+    'YS娛樂城真人百家樂2025',
+    'YS娛樂城真人百家樂比較',
+    'YS娛樂城真人百家樂推薦2025',
+    'YS娛樂城真人百家樂評價2025',
+  ],
+  
+  '體育與電子': [
+    'YS娛樂城體育投注',
+    'YS娛樂城電子遊戲',
+    'YS娛樂城體育',
+    'YS娛樂城電競',
+    'YS娛樂城老虎機',
+    'YS娛樂城體育賽事',
+    'YS娛樂城體育賠率',
+    'YS娛樂城體育分析',
+    'YS娛樂城體育直播',
+    'YS娛樂城電子遊戲推薦',
+    'YS娛樂城電子遊戲評價',
+    'YS娛樂城電子遊戲攻略',
+    'YS娛樂城體育投注教學',
+    'YS娛樂城體育投注技巧',
+    'YS娛樂城體育投注策略',
+    'YS娛樂城體育投注心得',
+    'YS娛樂城體育投注平台',
+    'YS娛樂城體育投注系統',
+    'YS娛樂城體育投注優惠',
+    'YS娛樂城體育投注出金',
+    'YS娛樂城體育投注安全嗎',
+    'YS娛樂城體育投注2025',
+    'YS娛樂城電子遊戲2025',
+    'YS娛樂城電競投注',
+    'YS娛樂城電競賽事',
+  ],
+};
+
+// ============================================
+// 步驟 2：從 Google Sheet 讀取現有關鍵字（需要先執行 HTTP Request 或 Google Sheets 節點）
+// ============================================
+// 注意：這個 Code 節點假設前面已經有節點讀取了 Google Sheet 的資料
+// 如果沒有，需要在這個 Code 節點之前加入「Google Sheets: Read Rows」節點
+
+// 從輸入資料中提取現有關鍵字（假設前面節點已經讀取 Sheet）
+const existingKeywords = [];
+
+// 方法 1：如果前面有 Google Sheets 節點，從 $input.all() 讀取
+if ($input.all && $input.all().length > 0) {
+  $input.all().forEach(item => {
+    const keyword = item.json.Keyword || item.json.keyword || '';
+    if (keyword && keyword.trim()) {
+      existingKeywords.push(keyword.trim().toLowerCase());
+    }
+  });
+}
+
+// 方法 2：如果前面沒有節點，需要手動呼叫 Google Sheets API（需要設定認證）
+// 這裡提供一個範例，但建議使用 n8n 的 Google Sheets 節點更簡單
+/*
+const sheetId = '1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes';
+const apiKey = $env.GOOGLE_SHEETS_API_KEY; // 需要在 n8n 環境變數中設定
+
+// 讀取四個分頁的關鍵字
+const gids = ['927317477', '677810879', '80898864', '1456663743'];
+for (const gid of gids) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:A?key=${apiKey}&gid=${gid}`;
+  // 使用 HTTP Request 節點會更簡單，這裡只是示意
+}
+*/
+
+// ============================================
+// 步驟 3：處理每個分類，去重並生成新關鍵字列表
+// ============================================
+
+const output = [];
+
+// 遍歷每個分類
+Object.keys(keywordLibraries).forEach(category => {
+  const keywords = keywordLibraries[category];
+  const newKeywords = [];
+  
+  // 去重：只保留不在現有關鍵字列表中的
+  keywords.forEach(keyword => {
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    if (!existingKeywords.includes(normalizedKeyword)) {
+      newKeywords.push(keyword);
+    }
+  });
+  
+  // 為每個新關鍵字生成輸出項目
+  newKeywords.forEach(keyword => {
+    output.push({
+      keyword: keyword,
+      category: category,
+      geo: 'TW', // 預設台灣，可根據需求調整
+      status: 'pending',
+      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD 格式
+    });
+  });
+  
+  // 輸出日誌（方便除錯）
+  console.log(`分類 "${category}": 總共 ${keywords.length} 個關鍵字，新增 ${newKeywords.length} 個，跳過 ${keywords.length - newKeywords.length} 個重複`);
+});
+
+// ============================================
+// 步驟 4：返回結果
+// ============================================
+
+// 如果沒有新關鍵字，返回空陣列
+if (output.length === 0) {
+  return {
+    json: {
+      message: '沒有新關鍵字需要補充',
+      total: 0,
+      byCategory: {}
+    }
+  };
+}
+
+// 統計各分類的數量
+const stats = {};
+output.forEach(item => {
+  stats[item.category] = (stats[item.category] || 0) + 1;
+});
+
+// 返回結果（n8n 會自動將陣列展開為多個 items）
+return output.map(item => ({
+  json: item
+}));
+
+// ============================================
+// 使用說明
+// ============================================
+// 
+// 1. 在 n8n 中建立新的 Workflow
+// 2. 加入「Google Sheets: Read Rows」節點（讀取現有關鍵字）
+//    - Sheet ID: 1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes
+//    - 需要讀取四個分頁（使用 Loop 或分別讀取）
+// 3. 加入「Code」節點，貼上這個 Code
+// 4. 加入「Split In Batches」節點（如果需要批次處理）
+// 5. 加入「Google Sheets: Append Row」節點（寫入新關鍵字）
+//    - 使用 Loop 或 Split In Batches 處理每個新關鍵字
+//    - 欄位對應：
+//      Keyword: {{ $json.keyword }}
+//      Category: {{ $json.category }}
+//      GEO: {{ $json.geo }}
+//      Status: {{ $json.status }}
+//      Date: {{ $json.date }}
+//
+// ============================================
+// 進階：如果要在 Code 節點內直接讀取 Google Sheet
+// ============================================
+// 可以在 Code 節點內使用 HTTP Request，但建議還是用 n8n 的 Google Sheets 節點
+// 因為認證和錯誤處理更簡單
+
