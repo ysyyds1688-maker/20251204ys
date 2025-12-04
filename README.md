@@ -261,16 +261,119 @@ public/images/
   - `influencers/influencer-3.jpg`
 - **參考**：`docs/圖片資源清單.md`
 
+### 📚 教學內容與流程說明（必須更新為正確版）
+
+> **重要**：以下教學頁面目前為 demo/範例內容，正式上架前必須根據實際平台流程更新為正確版本。
+
+#### 15. 註冊相關教學頁面
+- **需要更新**：所有註冊流程說明必須與實際平台一致
+- **檔案位置**：
+  - `pages/guides/RegisterGuidePage.tsx` - 基本註冊教學
+  - `pages/guides/casino/registration/RegistrationStepByStepPage.tsx` - 完整註冊流程
+  - `pages/guides/casino/registration/RegistrationVerificationPage.tsx` - 身份驗證教學
+  - `pages/guides/casino/registration/RegistrationBonusClaimPage.tsx` - 優惠領取教學
+- **需要確認的內容**：
+  - 註冊表單欄位是否正確（手機、Email、帳號名稱、密碼等）
+  - 驗證流程是否正確（手機驗證碼、Email 驗證等）
+  - 服務條款確認流程
+  - 體驗金領取方式與金額
+  - 註冊按鈕位置與文字（「VIP 登入」、「立即註冊」等）
+
+#### 16. 出金相關教學頁面
+- **需要更新**：所有出金流程說明必須與實際平台一致
+- **檔案位置**：
+  - `pages/guides/WithdrawalGuidePage.tsx` - 基本出金教學
+  - `pages/guides/casino/withdrawal/WithdrawalIndexPage.tsx` - 出金總覽
+  - `pages/guides/casino/withdrawal/WithdrawalSpeedComparisonPage.tsx` - 出金速度比較
+  - `pages/guides/casino/withdrawal/WithdrawalTroubleshootingPage.tsx` - 出金問題排除
+- **需要確認的內容**：
+  - 出金步驟是否正確（登入 → 進入出金頁面 → 選擇方式 → 填寫資訊 → 確認申請 → 審核 → 到帳）
+  - 出金方式是否正確（USDT、銀行轉帳等）
+  - 出金時間是否正確（5分鐘內到帳等）
+  - 出金限額是否正確（最低100元、最高100萬元等）
+  - 出金手續費說明是否正確
+  - 出金頁面路徑是否正確（「我的帳戶」→「出金」等）
+
+#### 17. 儲值相關教學頁面
+- **需要更新**：所有儲值流程說明必須與實際平台一致
+- **檔案位置**：
+  - `pages/guides/USDTDepositGuidePage.tsx` - USDT 儲值教學
+  - `pages/guides/casino/deposit/DepositIndexPage.tsx` - 儲值總覽
+  - `pages/guides/casino/deposit/DepositMethodsPage.tsx` - 儲值方式比較
+  - `pages/guides/casino/deposit/DepositBankTransferPage.tsx` - 銀行轉帳教學
+- **需要確認的內容**：
+  - 儲值方式是否正確（USDT、銀行轉帳等）
+  - USDT 協議支援是否正確（TRC20、ERC20 等）
+  - 儲值步驟是否正確
+  - 儲值限額是否正確
+  - 儲值手續費說明是否正確
+
+#### 18. 遊戲遊玩相關教學頁面
+- **需要更新**：所有遊戲攻略與遊玩說明必須與實際平台一致
+- **檔案位置**：
+  - `pages/guides/games/baccarat/` - 百家樂攻略系列
+    - `BaccaratBasicsPage.tsx` - 基礎教學
+    - `BaccaratRoadReadingPage.tsx` - 看路法教學
+    - `BaccaratBettingStrategyPage.tsx` - 下注策略
+    - `BaccaratAdvancedTipsPage.tsx` - 進階技巧
+  - `pages/guides/games/slots/` - 老虎機攻略系列
+    - `SlotsRTPGuidePage.tsx` - RTP 選擇指南
+    - `SlotsVolatilityPage.tsx` - 波動率分析
+    - `SlotsJackpotStrategyPage.tsx` - 獎池策略
+  - `pages/guides/games/sports/` - 體育投注攻略系列
+    - `SportsOddsAnalysisPage.tsx` - 賠率分析
+    - `SportsBankrollManagementPage.tsx` - 資金管理
+    - `SportsLiveBettingPage.tsx` - 滾球投注
+  - `pages/guides/games/poker/` - 德州撲克攻略系列
+    - `PokerStartingHandsPage.tsx` - 起手牌選擇
+    - `PokerPositionPlayPage.tsx` - 位置策略
+    - `PokerTournamentStrategyPage.tsx` - 錦標賽策略
+- **需要確認的內容**：
+  - 遊戲規則說明是否正確
+  - 遊戲玩法是否與實際平台一致
+  - 遊戲按鈕位置與文字（「立即遊玩」等）
+  - 遊戲連結是否正確
+  - 範例與計算是否正確
+
+#### 19. 其他教學頁面
+- **需要更新**：其他教學內容必須與實際平台一致
+- **檔案位置**：
+  - `pages/guides/ForgotPasswordGuidePage.tsx` - 忘記密碼教學
+  - `pages/guides/ScamPreventionGuidePage.tsx` - 詐騙避免指南
+  - `pages/guides/casino/bonuses/` - 優惠相關教學
+    - `BonusesTypesPage.tsx` - 優惠類型
+    - `BonusesWageringRequirementsPage.tsx` - 流水要求計算
+    - `BonusesBestPracticesPage.tsx` - 優惠使用最佳實踐
+- **需要確認的內容**：
+  - 密碼重置流程是否正確
+  - 優惠類型與金額是否正確
+  - 流水要求計算是否正確
+  - 所有流程說明是否與實際平台一致
+
+#### 20. 遊戲專區頁面
+- **需要更新**：遊戲專區頁面中的「立即遊玩」按鈕與連結
+- **檔案位置**：
+  - `pages/games/BaccaratPage.tsx`
+  - `pages/games/SlotsPage.tsx`
+  - `pages/games/SportsPage.tsx`
+  - `pages/games/PokerPage.tsx`
+  - `pages/games/LotteryPage.tsx`
+- **需要確認的內容**：
+  - 「立即遊玩」按鈕連結是否正確
+  - 遊戲註冊連結是否正確
+  - 體驗金說明是否正確（「註冊即送體驗金168」等）
+  - 遊戲介紹是否與實際平台一致
+
 ### 🔧 其他配置檢查
 
-#### 13. 部署配置
+#### 21. 部署配置
 - **需要確認**：
   - `zeabur.json` 配置是否正確
   - `vite.config.ts` 中的環境變數設定
   - 構建命令和輸出目錄
 - **參考**：`docs/部署完整指南.md`
 
-#### 14. 測試資料清理
+#### 22. 測試資料清理
 - **需要檢查**：
   - `src/data/mockForumData.ts` 中的測試資料
   - 確認正式環境不使用模擬資料
@@ -301,11 +404,24 @@ public/images/
 - [ ] 檢查所有圖片路徑是否正確
 - [ ] 如果使用 CDN，更新所有圖片 URL
 
+### 教學內容相關（重要）
+- [ ] 更新所有註冊教學頁面為正確流程
+- [ ] 更新所有出金教學頁面為正確流程
+- [ ] 更新所有儲值教學頁面為正確流程
+- [ ] 更新所有遊戲攻略頁面為正確內容
+- [ ] 確認所有「立即遊玩」按鈕連結正確
+- [ ] 確認所有體驗金說明正確
+- [ ] 確認所有流程步驟與實際平台一致
+- [ ] 確認所有限額、手續費、時間說明正確
+- [ ] 確認所有範例與計算正確
+
 ### 測試相關
 - [ ] 移除或禁用測試資料
 - [ ] 確認所有功能正常運作
 - [ ] 測試所有頁面載入正常
 - [ ] 測試文章顯示正常
+- [ ] 測試所有教學頁面內容正確
+- [ ] 測試所有連結正常運作
 
 ### 文件相關
 - [ ] 更新所有文件中的測試 URL
