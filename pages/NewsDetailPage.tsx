@@ -70,7 +70,7 @@ export const NewsDetailPage = () => {
             <div 
               className="w-full h-64 md:h-96 rounded-xl mb-8 bg-cover bg-center relative overflow-hidden"
               style={{
-                backgroundImage: `url("/images/articles/${id === '1' ? 'baccarat-tips' : id === '2' ? 'slots-recommendation' : id === '3' ? 'sports-analysis' : 'casino-recommendation'}.png")`,
+                backgroundImage: `url("/images/articles/${id === '1' ? 'game-guides/baccarat-tips' : id === '2' ? 'game-guides/slots-recommendation' : id === '3' ? 'game-guides/sports-analysis' : 'entertainment-reviews/casino-recommendation'}.png")`,
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>

@@ -43,18 +43,32 @@ export const RecommendationsIndexPage = () => {
         keywords="娛樂城推薦,娛樂城推薦2025,最佳娛樂城,安全娛樂城,快速出金娛樂城"
         canonical="/recommendations"
       />
-      <div className="min-h-screen bg-slate-950 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumb items={[{ name: '娛樂城推薦', url: '/recommendations' }]} />
-          
-          <div className="text-center mb-12">
+      <div className="min-h-screen bg-slate-950">
+        {/* Hero Section with Banner */}
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9', paddingTop: '80px' }}>
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/images/banners/casino-2.png)',
+              backgroundPosition: 'center',
+              backgroundSize: 'cover',
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/50 to-slate-950/80"></div>
+          </div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
             <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
               娛樂城推薦中心
             </h1>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               2025年最新娛樂城推薦，包含出金速度、優惠活動、安全性等全方位評比
             </p>
           </div>
+        </div>
+        
+        <div className="py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Breadcrumb items={[{ name: '娛樂城推薦', url: '/recommendations' }]} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             {categories.map((category) => (

@@ -26,9 +26,30 @@ export const ForumIndexPage = () => {
         description="YS 娛樂城論壇 - 討論最新娛樂城資訊、遊戲攻略與玩家心得。" 
         keywords="娛樂城論壇, 博弈討論區, 運彩分析, 老虎機攻略"
       />
-      <div className="py-12 bg-slate-950 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumb items={[{ name: '論壇首頁', url: '/forum' }]} />
+      <div className="bg-slate-950 min-h-screen">
+        {/* Hero Section with Banner */}
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9', paddingTop: '80px' }}>
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/images/banners/棋牌banner2.png)',
+              backgroundPosition: 'center',
+              backgroundSize: 'cover',
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/50 to-slate-950/80"></div>
+          </div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+            <h1 className="text-4xl md:text-5xl font-black text-white mb-4">討論區</h1>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              討論最新娛樂城資訊、遊戲攻略與玩家心得
+            </p>
+          </div>
+        </div>
+        
+        <div className="py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Breadcrumb items={[{ name: '論壇首頁', url: '/forum' }]} />
           
           {/* Hero Section */}
           <div className="text-center mb-16">

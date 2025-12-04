@@ -31,7 +31,7 @@ export const BaccaratPage = () => {
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url(/images/已使用/真人banner2.png)',
+              backgroundImage: 'url(/images/banners/真人banner2.png)',
               backgroundPosition: 'center',
               backgroundSize: 'cover',
             }}
