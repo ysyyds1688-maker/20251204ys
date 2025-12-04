@@ -49,10 +49,10 @@ export default defineConfig(({ mode }) => {
         },
         // 增加 chunk 大小限制
         chunkSizeWarningLimit: 2000,
-        // 使用 esbuild 壓縮（更穩定）
-        minify: 'esbuild',
-        // 確保源映射可用於調試
-        sourcemap: false,
+        // 暫時禁用壓縮，排查問題
+        minify: false,
+        // 啟用源映射以便調試
+        sourcemap: true,
       },
     };
 });
