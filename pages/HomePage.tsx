@@ -5,9 +5,9 @@ import { ArrowRight, Star, Shield, Smartphone, Trophy } from 'lucide-react';
 import { useArticles } from '../src/services/ArticleService'; // 引入文章服務
 
 const games = [
-  { name: 'TOP 體育', category: '賽事直播', image: '/images/已使用/體育.png', link: '/games/sports' },
-  { name: 'DG 真人', category: '視訊百家', image: '/images/已使用/真人 平台熱門.png', link: '/games/baccarat' },
-  { name: '88SOFT 電子', category: '熱門老虎機', image: '/images/已使用/電子 平台熱門.png', link: '/games/electronic' },
+  { name: 'TOP 體育', category: '賽事直播', image: '/images/articles/game-guides/體育.png', link: '/games/sports' },
+  { name: 'DG 真人', category: '視訊百家', image: '/images/articles/entertainment-reviews/真人 平台熱門.png', link: '/games/baccarat' },
+  { name: '88SOFT 電子', category: '熱門老虎機', image: '/images/articles/game-guides/電子 平台熱門.png', link: '/games/electronic' },
   { name: '高登棋牌', category: '對戰棋牌', image: '/images/已使用/高登橋牌 平台熱門.png', link: '/games/poker' },
 ];
 
