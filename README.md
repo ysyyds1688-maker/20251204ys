@@ -147,6 +147,172 @@ public/images/
 
 ---
 
+## ⚠️ 正式上架前需修改項目清單
+
+> **重要**：以下項目在正式上架前必須修改，否則會影響 SEO、功能或安全性。
+
+### 🔒 SEO 防護機制（必須解除）
+
+#### 1. `public/robots.txt`
+- **目前狀態**：`Disallow: /`（禁止所有爬蟲）
+- **需要修改**：
+  - 改為 `Allow: /` 或移除 `Disallow: /`
+  - 更新 Sitemap URL 為正式域名
+  - **檔案位置**：`public/robots.txt`
+  - **參考**：`docs/部署完整指南.md`
+
+#### 2. `index.html`
+- **目前狀態**：包含 `<meta name="robots" content="noindex, nofollow" />`
+- **需要修改**：
+  - 移除或改為 `<meta name="robots" content="index, follow" />`
+  - **檔案位置**：`index.html` 第 7 行
+
+#### 3. `components/SEO.tsx`
+- **目前狀態**：所有頁面強制輸出 `noindex` meta tag
+- **需要修改**：
+  - 移除強制 `noindex` 邏輯
+  - 改為根據環境變數或設定動態控制
+  - **檔案位置**：`components/SEO.tsx` 第 45 行
+
+### 🌐 域名與 URL 設定（必須更新）
+
+#### 4. `public/sitemap.xml`
+- **目前狀態**：所有 URL 使用 `https://ys-entertainment.com`
+- **需要修改**：
+  - 將所有 `https://ys-entertainment.com` 替換為正式域名
+  - 更新所有 `<lastmod>` 日期為實際日期
+  - **檔案位置**：`public/sitemap.xml`
+  - **影響範圍**：整個檔案（約 383 行）
+
+#### 5. `public/robots.txt`
+- **目前狀態**：Sitemap URL 為 `https://ys-entertainment.com/sitemap.xml`
+- **需要修改**：
+  - 更新為正式域名的 sitemap URL
+  - **檔案位置**：`public/robots.txt` 第 7 行
+
+#### 6. 結構化數據（Schema.org）中的 URL
+- **需要檢查**：所有頁面中的結構化數據（Organization, ContactPage, FAQ 等）
+- **檔案位置**：
+  - `pages/trust/AboutPage.tsx`
+  - `pages/trust/ContactPage.tsx`
+  - `pages/trust/SecurityPage.tsx`
+- **需要修改**：將所有 `https://ys-entertainment.com` 替換為正式域名
+
+### 📊 Google Sheet 配置（必須確認）
+
+#### 7. `src/services/ArticleService.ts`
+- **目前狀態**：
+  - Sheet ID: `1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes`（測試用）
+  - 綜合討論類的 CSV URL 被註解
+- **需要修改**：
+  - 確認是否使用正式 Google Sheet（或保持測試 Sheet）
+  - 如果新增「綜合討論類」分頁，需要：
+    1. 在 Google Sheet 中新增分頁並取得 GID
+    2. 取消註解第 29 行的 CSV URL
+    3. 將 `新的GID` 替換為實際 GID
+  - **檔案位置**：`src/services/ArticleService.ts` 第 18-29 行
+  - **參考**：`docs/分類對應完整指南.md`
+
+### 🔑 環境變數與 API 金鑰（必須設定）
+
+#### 8. 環境變數設定
+- **需要設定**：
+  - `GEMINI_API_KEY`（如果使用 Gemini AI）
+  - 其他 API 金鑰（Serper.dev、OpenAI 等）
+- **設定位置**：
+  - 本地開發：`.env.local`（不要提交到 Git）
+  - 部署環境：Zeabur Dashboard → Environment Variables
+- **參考**：`docs/部署完整指南.md`
+
+### 📝 n8n 工作流配置（必須更新）
+
+#### 9. n8n 工作流中的 Google Sheet ID
+- **需要修改**：所有 n8n 工作流中的 Google Sheet ID
+- **影響範圍**：
+  - 自動發文工作流
+  - 關鍵字管理工作流
+  - 智能補充關鍵字工作流
+- **參考文件**：
+  - `docs/n8n_自動發文完整指南.md`
+  - `docs/n8n_關鍵字管理完整指南.md`
+
+#### 10. n8n 工作流中的分類映射
+- **需要確認**：所有工作流中的 Category 值是否正確
+- **必須使用精確值**：
+  - `娛樂城評價`
+  - `優惠情報`
+  - `遊戲攻略`
+  - `綜合討論`
+- **參考**：`docs/分類對應完整指南.md`
+
+### 🖼️ 圖片與資源（必須檢查）
+
+#### 11. 圖片路徑與 CDN
+- **需要檢查**：
+  - 所有圖片路徑是否正確
+  - 如果使用 CDN，需要更新所有圖片 URL
+  - 確認所有圖片已上傳到正式環境
+- **參考**：`docs/圖片管理完整指南.md`
+
+#### 12. 網紅頭像補充
+- **待補充**：3 張網紅頭像
+  - `influencers/influencer-1.jpg`
+  - `influencers/influencer-2.jpg`
+  - `influencers/influencer-3.jpg`
+- **參考**：`docs/圖片資源清單.md`
+
+### 🔧 其他配置檢查
+
+#### 13. 部署配置
+- **需要確認**：
+  - `zeabur.json` 配置是否正確
+  - `vite.config.ts` 中的環境變數設定
+  - 構建命令和輸出目錄
+- **參考**：`docs/部署完整指南.md`
+
+#### 14. 測試資料清理
+- **需要檢查**：
+  - `src/data/mockForumData.ts` 中的測試資料
+  - 確認正式環境不使用模擬資料
+- **檔案位置**：`src/data/mockForumData.ts`
+
+---
+
+## 📋 正式上架檢查清單
+
+### SEO 相關
+- [ ] 移除 `robots.txt` 中的 `Disallow: /`
+- [ ] 移除 `index.html` 中的 `noindex, nofollow`
+- [ ] 移除 `components/SEO.tsx` 中的強制 `noindex`
+- [ ] 更新 `sitemap.xml` 中的所有 URL 為正式域名
+- [ ] 更新 `robots.txt` 中的 Sitemap URL
+- [ ] 更新所有結構化數據中的 URL
+
+### 配置相關
+- [ ] 確認 Google Sheet ID 是否使用正式版本
+- [ ] 確認綜合討論類分頁的 GID（如需要）
+- [ ] 設定所有環境變數（API Keys）
+- [ ] 更新 n8n 工作流中的 Google Sheet ID
+- [ ] 確認 n8n 工作流中的 Category 值正確
+
+### 資源相關
+- [ ] 確認所有圖片已上傳
+- [ ] 補充 3 張網紅頭像
+- [ ] 檢查所有圖片路徑是否正確
+- [ ] 如果使用 CDN，更新所有圖片 URL
+
+### 測試相關
+- [ ] 移除或禁用測試資料
+- [ ] 確認所有功能正常運作
+- [ ] 測試所有頁面載入正常
+- [ ] 測試文章顯示正常
+
+### 文件相關
+- [ ] 更新所有文件中的測試 URL
+- [ ] 確認所有文件中的域名正確
+
+---
+
 ## 🤝 交接事項
 
 1.  請先確認 React 站的 `/forum` 頁面，了解期望的論壇互動流程與視覺風格。
