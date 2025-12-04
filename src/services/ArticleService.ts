@@ -17,21 +17,59 @@ export interface Article {
 // 多個 Google Sheet CSV 連結（支援多分頁）
 // Sheet ID: 1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes
 const SHEET_CSV_URLS = [
-  // 分頁 1：娛樂城評價類 (高轉換意圖)
+  // 分頁 1：娛樂城評價類 (高轉換意圖) → Category: 娛樂城評價
   'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=927317477',
-  // 分頁 2：優惠活動類 (吸流量)
+  // 分頁 2：優惠活動類 (吸流量) → Category: 優惠情報
   'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=677810879',
-  // 分頁 3：真人百家樂類 (高含金量)
+  // 分頁 3：真人百家樂類 (高含金量) → Category: 遊戲攻略
   'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=80898864',
-  // 分頁 4：體育與電子類
+  // 分頁 4：體育與電子類 → Category: 遊戲攻略（與真人百家樂類合併顯示）
   'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=1456663743',
+  // 分頁 5：綜合討論類（新增，需要設定 GID） → Category: 綜合討論
+  // 'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=新的GID',
 ];
 
-// 預設圖片庫 (隨機分配給文章)
+// 預設圖片庫 (根據分類分配)
+const CATEGORY_IMAGES: Record<string, string[]> = {
+  '娛樂城評價': [
+    '/images/articles/entertainment-reviews/真人.png',
+    '/images/articles/entertainment-reviews/真人banner1.png',
+    '/images/articles/entertainment-reviews/真人 平台熱門.png',
+  ],
+  '優惠情報': [
+    '/images/promotions/first-deposit.png',
+    '/images/promotions/welcome-bonus.png',
+    '/images/promotions/優惠banner1.png',
+    '/images/promotions/棋牌banner1.png',
+    '/images/promotions/電子banner2.png',
+  ],
+  '遊戲攻略': [
+    '/images/articles/game-guides/真人遊戲專區.png',
+    '/images/articles/game-guides/電子遊戲專區.png',
+    '/images/articles/game-guides/體育遊戲專區.png',
+    '/images/articles/game-guides/電競遊戲專區.png',
+    '/images/articles/game-guides/捕魚機遊戲專區.png',
+    '/images/articles/game-guides/彩票遊戲專區.png',
+    '/images/articles/game-guides/棋牌.png',
+    '/images/articles/game-guides/電子1.png',
+    '/images/articles/game-guides/電子2.png',
+    '/images/articles/game-guides/電子3.png',
+    '/images/articles/game-guides/體育1.png',
+    '/images/articles/game-guides/電競.png',
+  ],
+  '綜合討論': [
+    '/images/articles/general-discussion/首頁文章1.png',
+    '/images/articles/general-discussion/首頁文章2.png',
+    '/images/articles/general-discussion/首頁文章3.png',
+    '/images/articles/general-discussion/neonvogue-1764419386349.png',
+  ],
+};
+
+// 通用預設圖片（如果分類沒有對應圖片）
 const DEFAULT_IMAGES = [
-  '/images/已使用/首頁文章1.png',
-  '/images/已使用/首頁文章2.png',
-  '/images/已使用/首頁文章3.png'
+  '/images/articles/general-discussion/首頁文章1.png',
+  '/images/articles/general-discussion/首頁文章2.png',
+  '/images/articles/general-discussion/首頁文章3.png',
 ];
 
 // 等待 PapaParse 載入的輔助函數
@@ -142,10 +180,15 @@ const parseCSV = (url: string): Promise<Article[]> => {
                     .replace(/-+/g, '-') // 將多個連字符合併為一個
                     .replace(/^-|-$/g, ''); // 移除開頭和結尾的連字符
                 })(),
-                // 優先從 Google Sheet 讀取 Date 欄位，如果沒有則使用當前日期
-                date: (row['Date'] || row['date'] || new Date().toISOString().split('T')[0]).toString().trim(),
-                category: (row['Category'] || '未分類').toString().trim(),
-                image: DEFAULT_IMAGES[index % DEFAULT_IMAGES.length] // 輪播圖片
+              // 優先從 Google Sheet 讀取 Date 欄位，如果沒有則使用當前日期
+              date: (row['Date'] || row['date'] || new Date().toISOString().split('T')[0]).toString().trim(),
+              category: (row['Category'] || '未分類').toString().trim(),
+              // 根據分類分配圖片，如果分類沒有對應圖片則使用通用預設圖片
+              image: (() => {
+                const category = (row['Category'] || '未分類').toString().trim();
+                const categoryImages = CATEGORY_IMAGES[category] || DEFAULT_IMAGES;
+                return categoryImages[index % categoryImages.length];
+              })()
               };
             });
           
