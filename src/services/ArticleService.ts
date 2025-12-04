@@ -39,9 +39,6 @@ const CATEGORY_IMAGES: Record<string, string[]> = {
   '優惠情報': [
     '/images/promotions/first-deposit.png',
     '/images/promotions/welcome-bonus.png',
-    '/images/promotions/優惠banner1.png',
-    '/images/promotions/棋牌banner1.png',
-    '/images/promotions/電子banner2.png',
   ],
   '遊戲攻略': [
     '/images/articles/game-guides/真人遊戲專區.png',

@@ -144,7 +144,7 @@ export const FORUM_TOPICS: ForumTopic[] = [
     replies: 12,
     tags: ['電子遊戲', '88SOFT', '爆分技巧'],
     summary: '88SOFT 是近期非常熱門的電子系統。本文分享如何觀察機台週期，以及我在《財神來了》贏得 5000 倍大獎的實戰過程...',
-    image: '/images/articles/slots-rtp-guide.png',
+    image: '/images/articles/game-guides/slots-rtp-guide.png',
     content: `
       <h2>遊戲介紹：財神來了</h2>
       <p>這款由 88SOFT 開發的《財神來了》，以其中獎率高、畫面喜氣著稱。遊戲採用 243 路賠付機制，只要連續出現相同符號即可中獎。</p>
@@ -164,7 +164,7 @@ export const FORUM_TOPICS: ForumTopic[] = [
     replies: 45,
     tags: ['體育投注', 'TOP體育', '賠率分析'],
     summary: '許多玩家都在問，到底該玩 TOP 體育還是熊貓體育？我們團隊針對 NBA 和英超賽事進行了為期一週的賠率追蹤實測...',
-    image: '/images/articles/sports-analysis.png',
+    image: '/images/articles/game-guides/sports-analysis.png',
     content: `
       <h2>為什麼選擇合適的體育平台很重要？</h2>
       <p>不同的體育平台在盤口開出時間、賠率水位以及滾球流暢度上都有差異。</p>
