@@ -63,7 +63,7 @@ const waitForPapa = (): Promise<void> => {
 // 解析單個 CSV 連結
 const parseCSV = (url: string): Promise<Article[]> => {
   return waitForPapa().then(() => {
-    return new Promise((resolve, reject) => {
+    return new Promise<Article[]>((resolve) => {
       // @ts-ignore - Papa is loaded from CDN
       if (!window.Papa) {
         console.error('PapaParse not loaded');
@@ -73,92 +73,92 @@ const parseCSV = (url: string): Promise<Article[]> => {
 
       // @ts-ignore
       window.Papa.parse(url, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      // 處理多行內容（HTML 可能包含換行）
-      newline: '',
-      // 引號處理，因為 Content 欄位可能包含引號和換行
-      quoteChar: '"',
-      escapeChar: '"',
-      complete: (results: any) => {
-        console.log(`CSV Parse Results from ${url}:`, results.data.length, 'rows');
-        
-        const articles: Article[] = results.data
-          .filter((row: any) => {
-            // 過濾掉空行
-            if (!row || Object.keys(row).length === 0) return false;
-            
-            // 檢查 Status 欄位，支援 'done', 'Done', 'DONE' 等大小寫變化
-            const status = (row['Status'] || '').toString().trim().toLowerCase();
-            const isDone = status === 'done';
-            
-            // Debug: 輸出過濾狀態
-            if (row['title']) {
-              console.log(`Article "${row['title']}": Status="${status}", isDone=${isDone}`);
-            }
-            
-            return isDone;
-          })
-          .map((row: any, index: number) => {
-            // 處理 Excerpt 欄位（注意 CSV 中可能有尾隨空格）
-            const excerpt = (row['Excerpt '] || row['Excerpt'] || '').toString().trim();
-            const title = (row['title'] || '').toString().trim();
-            
-            return {
-              id: `google-sheet-${url}-${index}`, // 使用 URL 作為 ID 的一部分，避免衝突
-              keyword: (row['Keyword'] || '').toString().trim(),
-              title: title || '無標題',
-              content: (row['Content'] || row['content'] || row['body'] || row['Body'] || '').toString().trim(),
-              excerpt: excerpt,
-              // 處理 Tags：優先從 CSV 讀取，如果沒有則從 Category 和 Keyword 衍生
-              tags: (() => {
-                const csvTags = (row['Tags'] || row['tags'] || '').toString().trim();
-                if (csvTags) {
-                  // 如果有 Tags 欄位，分割並清理
-                  return csvTags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0);
-                }
-                // 如果沒有 Tags，從 Category 和 Keyword 衍生
-                const category = (row['Category'] || '').toString().trim();
-                const keyword = (row['Keyword'] || '').toString().trim();
-                const derivedTags: string[] = [];
-                if (category && category !== '未分類') {
-                  derivedTags.push(category);
-                }
-                // 從關鍵字提取主要詞彙作為標籤
-                if (keyword) {
-                  const keywordParts = keyword.split(/\s+/).filter((part: string) => part.length > 1);
-                  derivedTags.push(...keywordParts.slice(0, 3)); // 最多取前 3 個詞
-                }
-                return derivedTags.filter((tag, index, self) => self.indexOf(tag) === index); // 去重
-              })(),
-              // 生成標準化的 slug（與前端匹配邏輯一致）
-              slug: (() => {
-                if (!title) return '';
-                return title
-                  .replace(/\s+/g, '-')
-                  .toLowerCase()
-                  .replace(/[^\w\u4e00-\u9fa5-]/g, '') // 保留中文、英文、數字和連字符
-                  .replace(/-+/g, '-') // 將多個連字符合併為一個
-                  .replace(/^-|-$/g, ''); // 移除開頭和結尾的連字符
-              })(),
-              // 優先從 Google Sheet 讀取 Date 欄位，如果沒有則使用當前日期
-              date: (row['Date'] || row['date'] || new Date().toISOString().split('T')[0]).toString().trim(),
-              category: (row['Category'] || '未分類').toString().trim(),
-              image: DEFAULT_IMAGES[index % DEFAULT_IMAGES.length] // 輪播圖片
-            };
-          });
-        
-        console.log(`Filtered articles from ${url}:`, articles.length);
-        resolve(articles);
-      },
-      error: (error: any) => {
-        console.error(`CSV Parse Error for ${url}:`, error);
-        // 不 reject，而是返回空陣列，這樣其他分頁仍可正常載入
-        resolve([]);
-      }
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        // 處理多行內容（HTML 可能包含換行）
+        newline: '',
+        // 引號處理，因為 Content 欄位可能包含引號和換行
+        quoteChar: '"',
+        escapeChar: '"',
+        complete: (results: any) => {
+          console.log(`CSV Parse Results from ${url}:`, results.data.length, 'rows');
+          
+          const articles: Article[] = results.data
+            .filter((row: any) => {
+              // 過濾掉空行
+              if (!row || Object.keys(row).length === 0) return false;
+              
+              // 檢查 Status 欄位，支援 'done', 'Done', 'DONE' 等大小寫變化
+              const status = (row['Status'] || '').toString().trim().toLowerCase();
+              const isDone = status === 'done';
+              
+              // Debug: 輸出過濾狀態
+              if (row['title']) {
+                console.log(`Article "${row['title']}": Status="${status}", isDone=${isDone}`);
+              }
+              
+              return isDone;
+            })
+            .map((row: any, index: number) => {
+              // 處理 Excerpt 欄位（注意 CSV 中可能有尾隨空格）
+              const excerpt = (row['Excerpt '] || row['Excerpt'] || '').toString().trim();
+              const title = (row['title'] || '').toString().trim();
+              
+              return {
+                id: `google-sheet-${url}-${index}`, // 使用 URL 作為 ID 的一部分，避免衝突
+                keyword: (row['Keyword'] || '').toString().trim(),
+                title: title || '無標題',
+                content: (row['Content'] || row['content'] || row['body'] || row['Body'] || '').toString().trim(),
+                excerpt: excerpt,
+                // 處理 Tags：優先從 CSV 讀取，如果沒有則從 Category 和 Keyword 衍生
+                tags: (() => {
+                  const csvTags = (row['Tags'] || row['tags'] || '').toString().trim();
+                  if (csvTags) {
+                    // 如果有 Tags 欄位，分割並清理
+                    return csvTags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0);
+                  }
+                  // 如果沒有 Tags，從 Category 和 Keyword 衍生
+                  const category = (row['Category'] || '').toString().trim();
+                  const keyword = (row['Keyword'] || '').toString().trim();
+                  const derivedTags: string[] = [];
+                  if (category && category !== '未分類') {
+                    derivedTags.push(category);
+                  }
+                  // 從關鍵字提取主要詞彙作為標籤
+                  if (keyword) {
+                    const keywordParts = keyword.split(/\s+/).filter((part: string) => part.length > 1);
+                    derivedTags.push(...keywordParts.slice(0, 3)); // 最多取前 3 個詞
+                  }
+                  return derivedTags.filter((tag, index, self) => self.indexOf(tag) === index); // 去重
+                })(),
+                // 生成標準化的 slug（與前端匹配邏輯一致）
+                slug: (() => {
+                  if (!title) return '';
+                  return title
+                    .replace(/\s+/g, '-')
+                    .toLowerCase()
+                    .replace(/[^\w\u4e00-\u9fa5-]/g, '') // 保留中文、英文、數字和連字符
+                    .replace(/-+/g, '-') // 將多個連字符合併為一個
+                    .replace(/^-|-$/g, ''); // 移除開頭和結尾的連字符
+                })(),
+                // 優先從 Google Sheet 讀取 Date 欄位，如果沒有則使用當前日期
+                date: (row['Date'] || row['date'] || new Date().toISOString().split('T')[0]).toString().trim(),
+                category: (row['Category'] || '未分類').toString().trim(),
+                image: DEFAULT_IMAGES[index % DEFAULT_IMAGES.length] // 輪播圖片
+              };
+            });
+          
+          console.log(`Filtered articles from ${url}:`, articles.length);
+          resolve(articles);
+        },
+        error: (error: any) => {
+          console.error(`CSV Parse Error for ${url}:`, error);
+          // 不 reject，而是返回空陣列，這樣其他分頁仍可正常載入
+          resolve([]);
+        }
+      });
     });
-  });
   });
 };
 
