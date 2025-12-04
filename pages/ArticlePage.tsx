@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, Tag, User, Clock } from 'lucide-react';
 export const ArticlePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { articles, loading: articlesLoading } = useArticles();
+  const loading = articlesLoading;
   
   // 從已載入的文章列表中找出當前文章（避免重複請求）
   const article = articles.find(a => {
@@ -54,8 +55,6 @@ export const ArticlePage = () => {
       })));
     }
   }, [article, loading, slug, articles]);
-  
-  const loading = articlesLoading;
 
   // 捲動到頂部
   useEffect(() => {
