@@ -43,7 +43,7 @@ export const NewsPage = () => {
         <div className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Breadcrumb items={[{ name: '最新消息', url: '/news' }]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((article) => (
               <Link
                 key={article.id}
@@ -75,6 +75,7 @@ export const NewsPage = () => {
                 </div>
               </Link>
             ))}
+          </div>
           </div>
         </div>
       </div>

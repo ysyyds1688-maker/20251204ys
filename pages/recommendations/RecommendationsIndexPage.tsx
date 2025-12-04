@@ -108,6 +108,7 @@ export const RecommendationsIndexPage = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </>
