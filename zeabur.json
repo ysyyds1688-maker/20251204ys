@@ -1,7 +1,8 @@
 {
   "build": {
-    "command": "npm run build",
-    "outputDirectory": "dist"
+    "command": "npm install && npm run build",
+    "outputDirectory": "dist",
+    "installCommand": "npm install"
   },
   "routes": [
     {
