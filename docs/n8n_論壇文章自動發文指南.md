@@ -134,43 +134,94 @@
 - 提取 `title`、`body`、`description`
 - 組裝標準化欄位
 
-**Code 範例**：
+**⚠️ 如果遇到「找不到 body 或 content 欄位」的錯誤**：
+
+**情況 1：AI Agent 返回 `article` 物件結構**
+- 如果 AI Agent 返回的結構是 `{ "title": "...", "article": { "h1": "...", "sections": [...] } }`
+- 使用「處理 article 結構版」Code 節點（`docs/n8n_Code節點_解析AI回應_處理article結構.txt`）
+- 這個版本會自動將 `article` 物件轉換成 HTML 格式
+
+**情況 2：不確定 AI Agent 的輸出格式**
+1. 先使用「診斷版」Code 節點（`docs/n8n_Code節點_解析AI回應_診斷版.txt`）
+2. 執行工作流，查看執行日誌中的詳細診斷資訊
+3. 確認 AI Agent 實際返回的欄位名稱
+4. 根據診斷結果選擇對應的 Code 節點版本
+
+**Code 範例（完整版，包含詳細錯誤處理）**：
+
+完整代碼請參考：`docs/n8n_Code節點_解析AI回應_完整版.txt`
+
+**簡化版（如果 AI Agent 直接返回物件）**：
 ```javascript
-// 取得 AI 回應
-const aiResponse = $input.item.json.response || $input.item.json.content || '';
+const item = $input.item.json;
 
-// 移除可能的 markdown 包裹
-let cleanedResponse = aiResponse
-  .replace(/```json\s*/g, '')
-  .replace(/```\s*/g, '')
-  .trim();
+// 取得 AI Agent 的輸出（可能是物件或字串）
+let aiOutput = item.response || item.content || item.output || item.json || item;
 
-// 嘗試解析 JSON
+// 如果已經是物件，直接使用
 let articleData;
-try {
-  articleData = JSON.parse(cleanedResponse);
-} catch (e) {
-  // 如果解析失敗，嘗試提取 JSON 部分
-  const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    articleData = JSON.parse(jsonMatch[0]);
-  } else {
-    throw new Error('無法解析 AI 回應');
+if (typeof aiOutput === 'object' && aiOutput !== null) {
+  articleData = aiOutput;
+} else {
+  // 如果是字串，需要解析 JSON
+  let cleanedResponse = aiOutput.toString()
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/g, '')
+    .trim();
+  
+  try {
+    articleData = JSON.parse(cleanedResponse);
+  } catch (e) {
+    const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      articleData = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error('無法解析 AI 回應');
+    }
   }
 }
+
+// 提取文章內容（優先順序：body > content > Body > Content）
+const articleBody = articleData.body 
+  || articleData.content 
+  || articleData.Body 
+  || articleData.Content 
+  || '';
+
+// 提取摘要
+const articleExcerpt = articleData.description 
+  || articleData.excerpt 
+  || articleData.Description 
+  || articleData.Excerpt 
+  || '';
+
+// 驗證 body 是否為空
+if (!articleBody || articleBody.toString().trim().length === 0) {
+  console.error('❌ AI 回應中沒有找到文章內容');
+  console.error('可用欄位:', Object.keys(articleData));
+  throw new Error('AI 回應中沒有找到文章內容（body 或 content 欄位為空）');
+}
+
+// 取得原始欄位
+const originalKeyword = item.Keyword || item.keyword || '';
+const originalCategory = item.Category || item.category || '';
+const originalGEO = item.GEO || item.geo || 'TW';
+
+// Debug 日誌
+console.log(`✅ 解析成功：Body=${articleBody.toString().length}字元, Excerpt=${articleExcerpt.toString().length}字元`);
 
 // 組裝輸出
 return {
   json: {
-    Keyword: $input.item.json.Keyword,
-    Category: $input.item.json.Category, // 保持原分類
-    GEO: $input.item.json.GEO || 'TW',
-    title: articleData.title || $input.item.json.Keyword,
-    body: articleData.body || '',
-    Content: articleData.body || '', // 兼容不同欄位名稱
-    Excerpt: articleData.description || articleData.excerpt || '',
-    Status: 'done', // 標記為已完成
-    Date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    Keyword: originalKeyword,
+    Category: originalCategory,
+    GEO: originalGEO,
+    title: articleData.title || articleData.Title || originalKeyword,
+    body: articleBody.toString().trim(),
+    Content: articleBody.toString().trim(), // ⚠️ 重要：完整文章內容
+    Excerpt: articleExcerpt.toString().trim() || articleBody.toString().substring(0, 150) + '...',
+    Status: 'done',
+    Date: new Date().toISOString().split('T')[0]
   }
 };
 ```
@@ -187,13 +238,19 @@ return {
     Keyword: $json.Keyword,
     GEO: $json.GEO,
     Category: $json.Category, // ⚠️ 必須正確！
-    Content: $json.body || $json.Content,
+    Content: $json.Content || $json.body, // ⚠️ 重要：必須寫入完整的文章內容（HTML 格式）
     title: $json.title,
-    Excerpt: $json.Excerpt,
+    Excerpt: $json.Excerpt, // 摘要（用於列表頁顯示）
     Status: 'done',
     Date: $json.Date
   }
   ```
+  
+  **⚠️ 重要提醒**：
+  - `Content` 欄位必須包含完整的文章內容（2000-3000 字的 HTML 格式）
+  - 前端會讀取 `Content` 欄位來顯示完整文章內容
+  - `Excerpt` 只用於列表頁的摘要顯示（150 字左右）
+  - 如果只寫入 `Excerpt` 而沒有 `Content`，文章詳情頁會顯示「內容尚未完成」
 
 ---
 

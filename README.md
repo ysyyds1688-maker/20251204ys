@@ -13,13 +13,20 @@
 
 ### 1. 技術規格文件
 *   📄 **`docs/WP_DEVELOPMENT_SPEC.md`** (核心文件): 詳細定義了未來 WordPress 網站的架構、CPT (自定義文章類型)、Taxonomies (分類法) 與 ACF 欄位規格。**開發 WP 主題前必讀。**
-*   📄 **`docs/WP_LAUNCH_SEO_CHECKLIST.md`**: WordPress 正式站上線前的 SEO 檢查清單 (包含解除 Noindex、Sitemap 設定等)。
-*   📄 **`docs/ys-seo-structure.md`**: 原始 SEO 架構規劃書。
+*   📄 **`docs/WordPress遷移完整指南.md`** ⭐ 新增: 從 React 原型遷移到 WordPress 的完整說明，包含文章管理差異、部署架構、n8n 工作流調整。
+*   📄 **`docs/WordPress開發與內容管理流程.md`** ⭐ 新增: 說明開發（程式碼）與內容管理的區別，以及網站持續改進的處理方式。
+*   📄 **`docs/SEO_IMPLEMENTATION.md`**: SEO 實作指南、結構化數據規格、Meta 標籤規範。
 
 ### 2. 圖片與資源
-*   📄 **`docs/圖片資源清單.md`**: 完整的圖片使用清單與狀態追蹤（✅ 41 張已完成，❌ 3 張待補充）。
-*   📄 **`docs/IMAGE_REQUIREMENTS.md`**: 全站圖片尺寸規範與 AI 生成提示詞。
-*   📂 **`public/images/`**: 存放已生成的圖片素材，已建立完整資料夾結構（articles, promotions, guides, recommendations, influencers）。
+*   📄 **`docs/圖片資源清單.md`**: 完整的圖片使用清單與狀態追蹤（✅ 41 張已完成）。
+*   📄 **`docs/圖片管理完整指南.md`** ⭐ 整合文件: 圖片資料夾結構、命名規則、n8n 處理、規格建議。
+*   📂 **`public/images/`**: 存放已生成的圖片素材，已建立完整資料夾結構：
+    - `articles/` - 文章圖片（按分類分資料夾）
+    - `banners/` - 所有 banner 圖片
+    - `promotions/` - 優惠活動圖片
+    - `guides/` - 攻略教學圖片
+    - `recommendations/` - 推薦評測圖片
+    - `influencers/` - 網紅頭像
 
 ### 3. 程式碼結構
 *   `pages/`: 所有頁面組件（統一位置）
@@ -31,6 +38,7 @@
     *   `src/services/`: 服務層（如 `ArticleService.ts` 用於讀取 Google Sheet 文章）。
     *   `src/data/`: 模擬資料 (如 `mockForumData.ts` 用於生成論壇假資料)。
 *   `docs/`: 所有技術文件與規劃文件（統一位置）
+    *   詳細文件索引請參考 `docs/README.md`
 
 ---
 
@@ -441,12 +449,29 @@ public/images/
 
 ## 📝 更新日誌
 
-### 2025-01-XX (最新更新)
+### 2025-12-05 (最新更新)
+- ✅ **綜合討論類整合完成**：已更新 GID (1435096533)，前端可正常讀取綜合討論文章
+- ✅ **熱門討論排序優化**：只顯示有完整內容的文章，按日期排序
+- ✅ **Content 欄位讀取優化**：加入詳細 Debug 日誌，確保完整文章內容正確讀取
+- ✅ **n8n Code 節點完善**：
+  - 完整版：`docs/n8n_Code節點_解析AI回應_完整版.txt`
+  - 處理 article 結構：`docs/n8n_Code節點_解析AI回應_處理article結構.txt`
+  - 診斷版：`docs/n8n_Code節點_解析AI回應_診斷版.txt`
+- ✅ **WordPress 遷移指南**：
+  - `docs/WordPress遷移完整指南.md` - 完整遷移說明
+  - `docs/WordPress開發與內容管理流程.md` - 開發與內容管理流程
+  - `docs/n8n_WordPress自動發文指南.md` - WordPress 自動發文設定
+- ✅ **文章管理指南**：`docs/文章管理指南.md` - 刪除、更新文章的方法
+- ✅ **文件整理**：更新 `docs/README.md`，整合所有文件索引
+
+### 2025-12-04 (前期更新)
 - ✅ **圖片資源整理完成**：41 張圖片已完成分類與路徑更新，建立完整資料夾結構
+- ✅ **圖片資料夾重組**：建立 `banners/` 資料夾，所有 banner 圖片統一管理
+- ✅ **網紅圖片處理**：3 張網紅圖片已壓縮並放置到 `influencers/` 資料夾
 - ✅ **YS 頁面文章完善**：關於我們、客服、出金保障三個頁面已完成內容與 SEO 優化
 - ✅ **SEO 優化完成**：所有頁面包含結構化數據、meta 標籤、內部連結
 - ✅ **文件建立**：`docs/圖片資源清單.md`、`docs/YS頁面文章檢查清單.md`
-- ⚠️ **待補充**：3 張網紅頭像
+- ⚠️ **待補充**：3 張網紅頭像（已處理，但可能需要替換為實際圖片）
 
 ### 2025-01-XX (前期更新)
 - ✅ 完成所有遊戲頁面 Banner (16:9 比例)
@@ -461,11 +486,12 @@ public/images/
 ### ✅ 已完成
 
 - **Google Sheet 作為唯一文章資料來源**
-  - 前端 `ArticleService.ts` 會從同一份 Google Sheet 的 **4 個分頁** 讀取 CSV：
-    - 娛樂城評價類（高轉換意圖）
-    - 優惠活動類（吸流量）
-    - 真人百家樂類（高含金量）
-    - 體育與電子類
+  - 前端 `ArticleService.ts` 會從同一份 Google Sheet 的 **5 個分頁** 讀取 CSV：
+    - 娛樂城評價類（高轉換意圖）→ Category: `娛樂城評價`
+    - 優惠活動類（吸流量）→ Category: `優惠情報`
+    - 真人百家樂類（高含金量）→ Category: `遊戲攻略`
+    - 體育與電子類 → Category: `遊戲攻略`
+    - 綜合討論類 → Category: `綜合討論`（GID: 1435096533）
   - 所有頁面共用這一份 Sheet：
     - 首頁「本週熱門話題」
     - `/topic/:slug` 文章頁（`ArticlePage`）
@@ -480,29 +506,42 @@ public/images/
     - 免責聲明內嵌在文章 conclusion，前端只再顯示一次
   - Code 節點負責：
     - 解析 AI 回傳的 JSON（含處理 ```json 包裹、亂碼、前後雜訊）
+    - 處理 `article` 物件結構（自動轉換為 HTML）
     - 組裝標準化欄位：`title` / `body` / `description`
-    - 輸出到 Sheet 的欄位：`Keyword` / `Category` / `GEO` / `title` / `body` / `description`
+    - 輸出到 Sheet 的欄位：`Keyword` / `Category` / `GEO` / `title` / `Content` / `Excerpt`
+  - **Code 節點版本**：
+    - 完整版：`docs/n8n_Code節點_解析AI回應_完整版.txt`
+    - 處理 article 結構：`docs/n8n_Code節點_解析AI回應_處理article結構.txt`
+    - 診斷版：`docs/n8n_Code節點_解析AI回應_診斷版.txt`
 
 - **前端與 slug / 內容整合**
   - `ArticleService.ts`：
     - 支援多個欄位作為內容來源：`Content` / `content` / `body` / `Body`
     - 產生統一規則的 `slug`（支援中文、英文、數字與連字號）
-    - 合併四個分頁、依日期排序
+    - 合併五個分頁、依日期排序（最新的在前）
+    - 只顯示 `Status=done` 的文章
+    - 加入詳細的 Debug 日誌（特別是優惠情報分類）
   - `ArticlePage.tsx` / `TopicPage.tsx`：
     - 使用相同的 `generateSlug` 邏輯做比對
     - 優先比對 `slug`，其次 `title` / 標準化 slug
     - 找不到文章時會輸出 debug log（方便開發時檢查）
   - 論壇頁面已全改為讀取 Google Sheet：
-    - `ForumIndexPage` 熱門討論改用 `useArticles()`
+    - `ForumIndexPage` 熱門討論改用 `useArticles()`（只顯示有完整內容的文章）
     - `ForumCategoryPage` 依 `Category` 與論壇分類對應篩選文章
 
-- **自動補充關鍵字工作流（規劃完成，Code 已就緒）**
-  - 文件：`docs/n8n_自動補充關鍵字工作流指南.md`
+- **自動補充關鍵字工作流（已完成）**
+  - 文件：`docs/n8n_關鍵字管理完整指南.md`
   - 方案 B（預定義列表，不用 AI）已提供完整 Code：
     - Code 檔：`docs/n8n_自動補充關鍵字_Code節點.txt`
-    - 每個分類有一組關鍵字庫（娛樂城評價 / 優惠活動 / 遊戲攻略 / 防詐騙 / 綜合討論）
-    - 支援去重：不會重複現有關鍵字
+    - 每個分類有一組關鍵字庫（娛樂城評價 / 優惠情報 / 遊戲攻略 / 綜合討論）
+    - 支援去重：不會重複現有關鍵字（使用 Set 提高效率）
     - 直接輸出標準欄位：`Keyword` / `Category` / `GEO` / `Status=pending`
+
+- **WordPress 遷移準備（已完成）**
+  - 文件：`docs/WordPress遷移完整指南.md`
+  - WordPress 開發規格：`docs/WP_DEVELOPMENT_SPEC.md`
+  - WordPress 開發流程：`docs/WordPress開發與內容管理流程.md`
+  - WordPress 自動發文：`docs/n8n_WordPress自動發文指南.md`
 
 ### ⏳ 待完成 To-do（優先度由高到低）
 
@@ -510,21 +549,16 @@ public/images/
 
 - **test-full-workflow**（高）  
   - 從「關鍵字 pending → n8n 發文 → Sheet `Status=done` → 前端顯示」跑一次完整流程  
-  - 確認四個分頁的文章都能正常出現在網站上，slug 與內容無誤
-
-- **confirm-5-sheets-structure**（中）  
-  - 目前已整合 4 個主分頁，如未來新增第 5 類（例如「綜合討論類」）需：  
-    - 在同一份 Sheet 新增分頁  
-    - 依照現有欄位結構：`Keyword | GEO | Category | Content | title | Excerpt | Status | Date`
-    - 更新 `SHEET_CSV_URLS` 與對應的 `Category` 邏輯（如有需要）
+  - 確認五個分頁的文章都能正常出現在網站上，slug 與內容無誤
+  - 確認 Content 欄位包含完整文章內容（不是只有 Excerpt）
 
 - **test-different-keywords**（中）  
   - 在每個分頁加入多組不同意圖的關鍵字，測試：  
     - AI 是否依關鍵字生成不同文章（不重複、不洗稿）  
-    - 風格匹配是否正確（防詐騙/優惠/攻略/評價）
+    - 風格匹配是否正確（優惠/攻略/評價/討論）
 
 - **add-more-keywords**（中）  
-  - 透過「自動補充關鍵字」 workflow 或手動方式，為四個分頁補足 20–30 組高品質關鍵字  
+  - 透過「自動補充關鍵字」 workflow 或手動方式，為五個分頁補足 20–30 組高品質關鍵字  
   - 建議先從方案 B（預定義列表）開始，之後再視需要接 AI 生成方案
 
 - **setup-date-field**（中）  
@@ -535,11 +569,15 @@ public/images/
 - **setup-auto-schedule**（中）  
   - 為以下 workflow 設定自動排程（Cron）：  
     - 每日自動發文 workflow（依各分頁/分類）  
-    - 自動補充關鍵字 workflow（例如每天或每週補一次）
+    - 自動補充關鍵字 workflow（例如每兩週的禮拜一執行）
+
+- **WordPress 遷移準備**（中）
+  - 架設 WordPress 環境
+  - 開發 WordPress 主題（參考 `docs/WP_DEVELOPMENT_SPEC.md`）
+  - 調整 n8n 工作流（參考 `docs/n8n_WordPress自動發文指南.md`）
 
 - **（可選）AI 版關鍵字補充**（低）  
   - 若之後要啟動 AI 生成關鍵字：  
-    - 使用 `docs/n8n_自動補充關鍵字_AI_Prompt.md` 作為 AI Agent 的 Prompt  
-    - Code 解析：`docs/n8n_自動補充關鍵字_AI生成版_Code節點.txt`  
+    - 使用 `docs/n8n_關鍵字管理完整指南.md` 中的 AI 生成方案
     - 建議先小量測試，確認關鍵字品質與去重邏輯
 

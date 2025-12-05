@@ -1,0 +1,229 @@
+// ============================================
+// n8n Code 節點：解析 AI 回應（處理 article 結構）
+// 功能：解析 AI Agent 返回的 article 物件，轉換成 HTML 格式的 body
+// ============================================
+
+const item = $input.item.json;
+
+console.log('=== 🔍 開始解析 AI Agent 輸出 ===');
+
+// ============================================
+// 步驟 1：取得 AI Agent 的輸出
+// ============================================
+
+// 從 output 欄位取得（AI Agent 通常會把回應放在 output 欄位）
+let aiOutput = item.output || item.response || item.content || item.text || '';
+
+console.log('📥 AI 輸出來源:', item.output ? 'item.output' : (item.response ? 'item.response' : '其他'));
+console.log('📥 AI 輸出類型:', typeof aiOutput);
+console.log('📥 AI 輸出長度:', aiOutput ? aiOutput.toString().length : 0);
+
+if (!aiOutput || aiOutput.toString().trim().length === 0) {
+  console.error('❌ AI Agent 沒有返回任何內容');
+  throw new Error('AI Agent 沒有返回任何內容');
+}
+
+// ============================================
+// 步驟 2：清理並解析 JSON
+// ============================================
+
+let aiData = null;
+
+// 如果是字串，需要解析
+if (typeof aiOutput === 'string') {
+  console.log('📝 AI 輸出是字串，開始解析...');
+  console.log('📝 原始輸出前 500 字:', aiOutput.substring(0, 500));
+  
+  // 清理 markdown 包裹
+  let cleanedResponse = aiOutput
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/g, '')
+    .replace(/^[\s\n]*/, '')
+    .replace(/[\s\n]*$/, '')
+    .trim();
+  
+  console.log('🧹 清理後長度:', cleanedResponse.length);
+  
+  // 解析 JSON
+  try {
+    aiData = JSON.parse(cleanedResponse);
+    console.log('✅ JSON 解析成功');
+  } catch (e) {
+    // 嘗試提取 JSON 部分
+    const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      aiData = JSON.parse(jsonMatch[0]);
+      console.log('✅ 使用正則匹配解析成功');
+    } else {
+      console.error('❌ 無法解析 JSON:', e.message);
+      throw new Error(`無法解析 AI 回應為 JSON: ${e.message}`);
+    }
+  }
+} else if (typeof aiOutput === 'object') {
+  // 如果已經是物件，直接使用
+  aiData = aiOutput;
+  console.log('✅ AI 輸出已經是物件，直接使用');
+} else {
+  throw new Error(`不支援的 AI 輸出類型: ${typeof aiOutput}`);
+}
+
+console.log('📊 解析後的資料欄位:', Object.keys(aiData));
+
+// ============================================
+// 步驟 3：提取並轉換 article 結構為 HTML
+// ============================================
+
+// 檢查是否有 article 物件
+const articleObj = aiData.article || aiData.Article || null;
+
+if (!articleObj) {
+  console.error('❌ 找不到 article 物件');
+  console.error('可用的欄位:', Object.keys(aiData));
+  
+  // 如果沒有 article，嘗試直接使用 body 或 content
+  const fallbackBody = aiData.body || aiData.content || aiData.Body || aiData.Content || '';
+  if (fallbackBody) {
+    console.log('⚠️ 使用備用方案：直接使用 body/content 欄位');
+    const articleBody = fallbackBody.toString().trim();
+    const articleExcerpt = aiData.meta_description || aiData.description || aiData.excerpt || articleBody.substring(0, 150) + '...';
+    const articleTitle = aiData.title || aiData.Title || '';
+    
+    return {
+      json: {
+        Keyword: item.Keyword || item.keyword || '',
+        Category: item.Category || item.category || '',
+        GEO: item.GEO || item.geo || 'TW',
+        title: articleTitle || item.Keyword || '',
+        body: articleBody,
+        Content: articleBody,
+        Excerpt: articleExcerpt.toString().trim(),
+        Status: 'done',
+        Date: new Date().toISOString().split('T')[0]
+      }
+    };
+  }
+  
+  throw new Error('找不到 article 物件，且沒有可用的 body/content 欄位');
+}
+
+console.log('✅ 找到 article 物件');
+console.log('Article 的欄位:', Object.keys(articleObj));
+
+// ============================================
+// 步驟 4：將 article 物件轉換成 HTML
+// ============================================
+
+function convertArticleToHTML(article) {
+  let html = '';
+  
+  // H1 標題
+  if (article.h1) {
+    html += `<h1>${article.h1}</h1>\n\n`;
+  }
+  
+  // 引言
+  if (article.introduction) {
+    html += `<p>${article.introduction}</p>\n\n`;
+  }
+  
+  // Sections（段落）
+  if (article.sections && Array.isArray(article.sections)) {
+    article.sections.forEach(section => {
+      // H2 標題
+      if (section.h2) {
+        html += `<h2>${section.h2}</h2>\n\n`;
+      }
+      
+      // 段落
+      if (section.paragraphs && Array.isArray(section.paragraphs)) {
+        section.paragraphs.forEach(para => {
+          // 處理粗體標記（**文字** -> <strong>文字</strong>）
+          const processedPara = para
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+          
+          html += `<p>${processedPara}</p>\n\n`;
+        });
+      }
+    });
+  }
+  
+  // Conclusion（結論）
+  if (article.conclusion) {
+    if (article.conclusion.h3) {
+      html += `<h3>${article.conclusion.h3}</h3>\n\n`;
+    }
+    
+    if (article.conclusion.paragraphs && Array.isArray(article.conclusion.paragraphs)) {
+      article.conclusion.paragraphs.forEach(para => {
+        const processedPara = para
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        html += `<p>${processedPara}</p>\n\n`;
+      });
+    }
+  }
+  
+  // 添加免責聲明（如果結論中沒有）
+  if (!html.includes('免責聲明') && !html.includes('免責')) {
+    html += `<p style="padding: 1rem; background-color: rgba(251, 191, 36, 0.1); border-left: 4px solid rgba(251, 191, 36, 0.5); border-radius: 0 0.5rem 0.5rem 0; margin-top: 2rem;"><strong style="color: #fbbf24;">免責聲明：</strong> 以上內容純屬個人建議與經驗分享，不代表本論壇立場。所有資訊僅供參考，請讀者自行判斷並承擔風險。本論壇不對任何因使用上述資訊而導致的損失負責。理性投注，量力而為。</p>`;
+  }
+  
+  return html.trim();
+}
+
+const articleHTML = convertArticleToHTML(articleObj);
+
+console.log('✅ Article 轉換為 HTML 完成');
+console.log('📝 HTML 長度:', articleHTML.length);
+console.log('📝 HTML 前 300 字:', articleHTML.substring(0, 300));
+
+if (!articleHTML || articleHTML.length < 100) {
+  console.error('❌ 轉換後的 HTML 太短或為空');
+  throw new Error('Article 轉換為 HTML 後內容為空或太短');
+}
+
+// ============================================
+// 步驟 5：提取其他欄位
+// ============================================
+
+const articleTitle = aiData.title || aiData.Title || articleObj.h1 || '';
+const articleExcerpt = aiData.meta_description || aiData.description || aiData.excerpt || articleHTML.substring(0, 150) + '...';
+
+console.log('📋 提取結果:');
+console.log('  - Title:', articleTitle);
+console.log('  - Excerpt 長度:', articleExcerpt.toString().length);
+console.log('  - Body (HTML) 長度:', articleHTML.length);
+
+// ============================================
+// 步驟 6：取得原始欄位
+// ============================================
+
+const originalKeyword = item.Keyword || item.keyword || '';
+const originalCategory = item.Category || item.category || '';
+const originalGEO = item.GEO || item.geo || 'TW';
+
+console.log('📋 原始欄位:');
+console.log('  - Keyword:', originalKeyword);
+console.log('  - Category:', originalCategory);
+console.log('  - GEO:', originalGEO);
+
+// ============================================
+// 步驟 7：組裝輸出
+// ============================================
+
+return {
+  json: {
+    Keyword: originalKeyword,
+    Category: originalCategory,
+    GEO: originalGEO,
+    title: articleTitle.toString().trim() || originalKeyword,
+    body: articleHTML,
+    Content: articleHTML, // ⚠️ 重要：完整的 HTML 文章內容
+    Excerpt: articleExcerpt.toString().trim(),
+    Status: 'done',
+    Date: new Date().toISOString().split('T')[0]
+  }
+};
+

@@ -1,0 +1,243 @@
+// ============================================
+// n8n Code 節點：解析 AI 回應（診斷版）
+// 功能：解析 AI Agent 的 JSON 回應，並輸出詳細的診斷資訊
+// ============================================
+
+const item = $input.item.json;
+
+console.log('=== 🔍 開始診斷 AI Agent 輸出 ===');
+console.log('輸入資料的所有欄位:', Object.keys(item));
+console.log('輸入資料完整內容:', JSON.stringify(item, null, 2).substring(0, 2000));
+
+// ============================================
+// 步驟 1：取得 AI Agent 的輸出（嘗試多種方式）
+// ============================================
+
+let aiOutput = null;
+let aiOutputSource = '';
+
+// 方法 1：從常見的 AI Agent 輸出欄位取得
+if (item.response) {
+  aiOutput = item.response;
+  aiOutputSource = 'item.response';
+} else if (item.content) {
+  aiOutput = item.content;
+  aiOutputSource = 'item.content';
+} else if (item.output) {
+  aiOutput = item.output;
+  aiOutputSource = 'item.output';
+} else if (item.json) {
+  aiOutput = item.json;
+  aiOutputSource = 'item.json';
+} else if (item.text) {
+  aiOutput = item.text;
+  aiOutputSource = 'item.text';
+} else if (item.message) {
+  aiOutput = item.message;
+  aiOutputSource = 'item.message';
+} else {
+  // 如果都沒有，嘗試使用整個 item
+  aiOutput = item;
+  aiOutputSource = 'item (整個物件)';
+}
+
+console.log(`📥 AI 輸出來源: ${aiOutputSource}`);
+console.log(`📥 AI 輸出類型: ${typeof aiOutput}`);
+console.log(`📥 AI 輸出是否為 null: ${aiOutput === null}`);
+console.log(`📥 AI 輸出是否為 undefined: ${aiOutput === undefined}`);
+
+if (aiOutput === null || aiOutput === undefined) {
+  console.error('❌ 無法找到 AI Agent 的輸出');
+  console.error('請檢查 AI Agent 節點的輸出欄位名稱');
+  throw new Error('無法找到 AI Agent 的輸出，請檢查 AI Agent 節點的輸出格式');
+}
+
+// ============================================
+// 步驟 2：處理不同類型的 AI 輸出
+// ============================================
+
+let articleData = null;
+
+// 情況 1：如果 AI 輸出已經是物件
+if (typeof aiOutput === 'object' && aiOutput !== null) {
+  console.log('✅ AI 輸出是物件，直接使用');
+  console.log('物件的所有欄位:', Object.keys(aiOutput));
+  articleData = aiOutput;
+} 
+// 情況 2：如果 AI 輸出是字串，需要解析 JSON
+else if (typeof aiOutput === 'string') {
+  console.log(`📝 AI 輸出是字串，長度: ${aiOutput.length}`);
+  console.log(`📝 AI 輸出前 500 字: ${aiOutput.substring(0, 500)}`);
+  
+  // 清理字串（移除 markdown 包裹）
+  let cleanedResponse = aiOutput
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/g, '')
+    .replace(/^[\s\n]*/, '')
+    .replace(/[\s\n]*$/, '')
+    .trim();
+  
+  console.log(`🧹 清理後長度: ${cleanedResponse.length}`);
+  console.log(`🧹 清理後前 500 字: ${cleanedResponse.substring(0, 500)}`);
+  
+  // 嘗試解析 JSON
+  try {
+    articleData = JSON.parse(cleanedResponse);
+    console.log('✅ 方法 1 成功：直接解析 JSON');
+  } catch (e1) {
+    console.log('⚠️ 方法 1 失敗:', e1.message);
+    
+    // 方法 2：尋找 JSON 物件
+    try {
+      const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        articleData = JSON.parse(jsonMatch[0]);
+        console.log('✅ 方法 2 成功：正則匹配 JSON 物件');
+      } else {
+        throw new Error('找不到 JSON 物件');
+      }
+    } catch (e2) {
+      console.error('❌ 方法 2 失敗:', e2.message);
+      console.error('清理後的回應前 1000 字:', cleanedResponse.substring(0, 1000));
+      throw new Error(`無法解析 AI 回應為 JSON: ${e2.message}`);
+    }
+  }
+} 
+// 情況 3：其他類型
+else {
+  console.error(`❌ 不支援的 AI 輸出類型: ${typeof aiOutput}`);
+  throw new Error(`不支援的 AI 輸出類型: ${typeof aiOutput}`);
+}
+
+// ============================================
+// 步驟 3：診斷解析後的資料
+// ============================================
+
+console.log('=== 📊 解析後的資料結構 ===');
+console.log('所有欄位:', Object.keys(articleData));
+console.log('完整內容 (前 2000 字):', JSON.stringify(articleData, null, 2).substring(0, 2000));
+
+// 檢查每個可能的欄位
+const possibleBodyFields = ['body', 'content', 'Body', 'Content', 'text', 'Text', 'article', 'Article'];
+const possibleExcerptFields = ['description', 'excerpt', 'Description', 'Excerpt', 'summary', 'Summary'];
+const possibleTitleFields = ['title', 'Title', 'headline', 'Headline', 'subject', 'Subject'];
+
+console.log('=== 🔎 檢查可能的欄位 ===');
+
+// 檢查 body/content 欄位
+let foundBodyField = null;
+let foundBodyValue = null;
+for (const field of possibleBodyFields) {
+  if (articleData[field] !== undefined && articleData[field] !== null) {
+    foundBodyField = field;
+    foundBodyValue = articleData[field];
+    console.log(`✅ 找到 body 欄位: ${field}, 類型: ${typeof foundBodyValue}, 長度: ${foundBodyValue ? foundBodyValue.toString().length : 0}`);
+    break;
+  }
+}
+
+// 檢查 excerpt/description 欄位
+let foundExcerptField = null;
+let foundExcerptValue = null;
+for (const field of possibleExcerptFields) {
+  if (articleData[field] !== undefined && articleData[field] !== null) {
+    foundExcerptField = field;
+    foundExcerptValue = articleData[field];
+    console.log(`✅ 找到 excerpt 欄位: ${field}, 類型: ${typeof foundExcerptValue}, 長度: ${foundExcerptValue ? foundExcerptValue.toString().length : 0}`);
+    break;
+  }
+}
+
+// 檢查 title 欄位
+let foundTitleField = null;
+let foundTitleValue = null;
+for (const field of possibleTitleFields) {
+  if (articleData[field] !== undefined && articleData[field] !== null) {
+    foundTitleField = field;
+    foundTitleValue = articleData[field];
+    console.log(`✅ 找到 title 欄位: ${field}, 值: ${foundTitleValue}`);
+    break;
+  }
+}
+
+// ============================================
+// 步驟 4：提取文章內容
+// ============================================
+
+const articleBody = foundBodyValue ? foundBodyValue.toString().trim() : '';
+const articleExcerpt = foundExcerptValue ? foundExcerptValue.toString().trim() : '';
+const articleTitle = foundTitleValue ? foundTitleValue.toString().trim() : '';
+
+console.log('=== 📝 提取結果 ===');
+console.log(`Body 欄位: ${foundBodyField || '未找到'}, 長度: ${articleBody.length}`);
+console.log(`Excerpt 欄位: ${foundExcerptField || '未找到'}, 長度: ${articleExcerpt.length}`);
+console.log(`Title 欄位: ${foundTitleField || '未找到'}, 值: ${articleTitle}`);
+
+// 如果 body 為空，輸出所有欄位供診斷
+if (!articleBody || articleBody.length === 0) {
+  console.error('❌ Body 欄位為空！');
+  console.error('=== 所有可用的欄位和值 ===');
+  Object.keys(articleData).forEach(key => {
+    const value = articleData[key];
+    const valueType = typeof value;
+    const valueLength = value ? value.toString().length : 0;
+    const valuePreview = value ? value.toString().substring(0, 100) : 'null/undefined';
+    console.error(`  - ${key}: 類型=${valueType}, 長度=${valueLength}, 預覽=${valuePreview}`);
+  });
+  
+  throw new Error(`AI 回應中沒有找到文章內容。找到的欄位: ${Object.keys(articleData).join(', ')}。請檢查 AI Agent 的輸出格式，確保包含 'body' 或 'content' 欄位。`);
+}
+
+// ============================================
+// 步驟 5：取得原始欄位
+// ============================================
+
+const originalKeyword = item.Keyword || item.keyword || '';
+const originalCategory = item.Category || item.category || '';
+const originalGEO = item.GEO || item.geo || 'TW';
+
+console.log('=== 📋 原始欄位 ===');
+console.log(`Keyword: ${originalKeyword}`);
+console.log(`Category: ${originalCategory}`);
+console.log(`GEO: ${originalGEO}`);
+
+// ============================================
+// 步驟 6：組裝輸出
+// ============================================
+
+const finalBody = articleBody;
+const finalExcerpt = articleExcerpt || finalBody.substring(0, 150) + '...';
+const finalTitle = articleTitle || originalKeyword;
+
+console.log('=== ✅ 最終輸出 ===');
+console.log(`Title: ${finalTitle.substring(0, 50)}${finalTitle.length > 50 ? '...' : ''}`);
+console.log(`Body 長度: ${finalBody.length} 字元`);
+console.log(`Excerpt 長度: ${finalExcerpt.length} 字元`);
+
+if (finalBody.length < 500) {
+  console.warn(`⚠️ 警告：Body 長度較短 (${finalBody.length} 字元)，可能只包含摘要`);
+  console.warn(`Body 前 200 字: ${finalBody.substring(0, 200)}`);
+}
+
+return {
+  json: {
+    Keyword: originalKeyword,
+    Category: originalCategory,
+    GEO: originalGEO,
+    title: finalTitle,
+    body: finalBody,
+    Content: finalBody, // ⚠️ 重要：完整文章內容
+    Excerpt: finalExcerpt,
+    Status: 'done',
+    Date: new Date().toISOString().split('T')[0],
+    // 診斷資訊（可選，用於除錯）
+    _debug: {
+      bodyField: foundBodyField,
+      excerptField: foundExcerptField,
+      titleField: foundTitleField,
+      bodyLength: finalBody.length,
+      excerptLength: finalExcerpt.length
+    }
+  }
+};
+

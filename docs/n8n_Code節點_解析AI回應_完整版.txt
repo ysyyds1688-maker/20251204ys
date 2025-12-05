@@ -1,0 +1,211 @@
+// ============================================
+// n8n Code 節點：解析 AI 回應並組裝完整欄位
+// 功能：正確解析 AI Agent 的 JSON 回應，提取完整文章內容
+// ============================================
+
+// ============================================
+// 步驟 1：取得 AI Agent 的輸出
+// ============================================
+
+const item = $input.item.json;
+
+// 方法 1：從 AI Agent 的直接輸出取得（優先）
+let aiOutput = item.response || item.content || item.output || '';
+
+// 方法 2：如果 AI Agent 有包裝在特定欄位中
+if (!aiOutput && item.json) {
+  aiOutput = item.json.response || item.json.content || item.json.output || '';
+}
+
+// 方法 3：如果 AI Agent 返回的是物件，直接使用
+if (typeof aiOutput === 'object' && aiOutput !== null) {
+  // AI Agent 已經返回解析後的物件，直接使用
+  const articleData = aiOutput;
+  
+  // 提取文章內容
+  const articleBody = articleData.body || articleData.content || articleData.Body || '';
+  const articleExcerpt = articleData.description || articleData.excerpt || articleData.Description || '';
+  const articleTitle = articleData.title || articleData.Title || '';
+  
+  // 驗證 body 是否為空
+  if (!articleBody || articleBody.toString().trim().length === 0) {
+    console.error('❌ AI 回應中沒有找到文章內容（body/content 欄位為空）');
+    console.error('AI 回應內容:', JSON.stringify(articleData, null, 2));
+    throw new Error('AI 回應中沒有找到文章內容（body 或 content 欄位為空）');
+  }
+  
+  // 取得原始欄位（從前面的節點傳遞）
+  const originalKeyword = item.Keyword || item.keyword || '';
+  const originalCategory = item.Category || item.category || '';
+  const originalGEO = item.GEO || item.geo || 'TW';
+  
+  console.log(`✅ 成功解析 AI 回應：`);
+  console.log(`   - Title: ${articleTitle.substring(0, 50)}...`);
+  console.log(`   - Body 長度: ${articleBody.toString().length} 字元`);
+  console.log(`   - Excerpt 長度: ${articleExcerpt.toString().length} 字元`);
+  console.log(`   - Keyword: ${originalKeyword}`);
+  console.log(`   - Category: ${originalCategory}`);
+  
+  // 組裝輸出
+  return {
+    json: {
+      Keyword: originalKeyword,
+      Category: originalCategory,
+      GEO: originalGEO,
+      title: articleTitle || originalKeyword,
+      body: articleBody.toString().trim(), // 用於內部傳遞
+      Content: articleBody.toString().trim(), // ⚠️ 重要：這是寫入 Google Sheet 的完整文章內容
+      Excerpt: articleExcerpt.toString().trim() || articleBody.toString().substring(0, 150) + '...',
+      Status: 'done',
+      Date: new Date().toISOString().split('T')[0]
+    }
+  };
+}
+
+// ============================================
+// 步驟 2：如果 AI Agent 返回的是字串（JSON 格式），需要解析
+// ============================================
+
+if (!aiOutput || typeof aiOutput !== 'string') {
+  console.error('❌ AI Agent 沒有返回有效的回應');
+  console.error('輸入資料:', JSON.stringify(item, null, 2));
+  throw new Error('AI Agent 沒有返回有效的回應');
+}
+
+console.log('📝 原始 AI 回應長度:', aiOutput.length);
+console.log('📝 原始 AI 回應前 500 字:', aiOutput.substring(0, 500));
+
+// ============================================
+// 步驟 3：清理 AI 回應（移除 markdown 包裹和雜訊）
+// ============================================
+
+let cleanedResponse = aiOutput
+  .replace(/```json\s*/gi, '')  // 移除 ```json
+  .replace(/```\s*/g, '')        // 移除 ```
+  .replace(/^[\s\n]*/, '')       // 移除開頭空白
+  .replace(/[\s\n]*$/, '')       // 移除結尾空白
+  .trim();
+
+console.log('🧹 清理後回應長度:', cleanedResponse.length);
+
+// ============================================
+// 步驟 4：解析 JSON
+// ============================================
+
+let articleData = null;
+
+// 方法 1：直接解析
+try {
+  articleData = JSON.parse(cleanedResponse);
+  console.log('✅ 方法 1 成功：直接解析 JSON');
+} catch (e1) {
+  console.log('⚠️ 方法 1 失敗，嘗試方法 2...');
+  
+  // 方法 2：尋找 JSON 物件
+  try {
+    const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      articleData = JSON.parse(jsonMatch[0]);
+      console.log('✅ 方法 2 成功：正則匹配 JSON 物件');
+    }
+  } catch (e2) {
+    console.log('⚠️ 方法 2 失敗，嘗試方法 3...');
+    
+    // 方法 3：尋找 keywords 陣列（如果是關鍵字生成）
+    try {
+      const arrayMatch = cleanedResponse.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        const keywordsArray = JSON.parse(arrayMatch[0]);
+        articleData = { keywords: keywordsArray };
+        console.log('✅ 方法 3 成功：陣列解析');
+      }
+    } catch (e3) {
+      console.error('❌ 所有解析方法都失敗');
+      console.error('清理後的回應前 1000 字:', cleanedResponse.substring(0, 1000));
+      console.error('錯誤 1:', e1.message);
+      console.error('錯誤 2:', e2.message);
+      console.error('錯誤 3:', e3.message);
+      
+      throw new Error('無法解析 AI 回應，請檢查 AI Agent 的輸出格式');
+    }
+  }
+}
+
+// ============================================
+// 步驟 5：驗證並提取文章內容
+// ============================================
+
+if (!articleData) {
+  throw new Error('無法解析 AI 回應為 JSON 物件');
+}
+
+// 提取文章內容（優先順序：body > content > Body > Content）
+const articleBody = articleData.body 
+  || articleData.content 
+  || articleData.Body 
+  || articleData.Content 
+  || '';
+
+// 提取摘要（優先順序：description > excerpt > Description > Excerpt）
+const articleExcerpt = articleData.description 
+  || articleData.excerpt 
+  || articleData.Description 
+  || articleData.Excerpt 
+  || '';
+
+// 提取標題
+const articleTitle = articleData.title 
+  || articleData.Title 
+  || articleData.headline 
+  || articleData.Headline 
+  || '';
+
+// 驗證 body 是否為空
+if (!articleBody || articleBody.toString().trim().length === 0) {
+  console.error('❌ AI 回應中沒有找到文章內容（body/content 欄位為空）');
+  console.error('AI 回應的可用欄位:', Object.keys(articleData));
+  console.error('AI 回應內容:', JSON.stringify(articleData, null, 2).substring(0, 1000));
+  throw new Error('AI 回應中沒有找到文章內容（body 或 content 欄位為空）');
+}
+
+// 取得原始欄位（從前面的節點傳遞）
+const originalKeyword = item.Keyword || item.keyword || '';
+const originalCategory = item.Category || item.category || '';
+const originalGEO = item.GEO || item.geo || 'TW';
+
+// ============================================
+// 步驟 6：組裝輸出
+// ============================================
+
+const bodyString = articleBody.toString().trim();
+const excerptString = articleExcerpt.toString().trim() || bodyString.substring(0, 150) + '...';
+const titleString = articleTitle.toString().trim() || originalKeyword;
+
+console.log(`✅ 成功解析 AI 回應：`);
+console.log(`   - Title: ${titleString.substring(0, 50)}${titleString.length > 50 ? '...' : ''}`);
+console.log(`   - Body 長度: ${bodyString.length} 字元`);
+console.log(`   - Excerpt 長度: ${excerptString.length} 字元`);
+console.log(`   - Keyword: ${originalKeyword}`);
+console.log(`   - Category: ${originalCategory}`);
+
+// 如果 body 長度太短，發出警告
+if (bodyString.length < 500) {
+  console.warn(`⚠️ 警告：Body 長度較短 (${bodyString.length} 字元)，可能只包含摘要而非完整內容`);
+  console.warn(`   Body 前 200 字: ${bodyString.substring(0, 200)}`);
+}
+
+// 返回組裝好的資料
+return {
+  json: {
+    Keyword: originalKeyword,
+    Category: originalCategory,
+    GEO: originalGEO,
+    title: titleString,
+    body: bodyString, // 用於內部傳遞
+    Content: bodyString, // ⚠️ 重要：這是寫入 Google Sheet 的完整文章內容
+    Excerpt: excerptString, // 摘要（用於列表頁顯示）
+    Status: 'done',
+    Date: new Date().toISOString().split('T')[0]
+  }
+};
+
