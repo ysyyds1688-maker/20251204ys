@@ -25,8 +25,8 @@ const SHEET_CSV_URLS = [
   'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=80898864',
   // 分頁 4：體育與電子類 → Category: 遊戲攻略（與真人百家樂類合併顯示）
   'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=1456663743',
-  // 分頁 5：綜合討論類（新增，需要設定 GID） → Category: 綜合討論
-  // 'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=新的GID',
+  // 分頁 5：綜合討論類 → Category: 綜合討論
+  'https://docs.google.com/spreadsheets/d/1eMQUXRcn9-wELa8cLoK6kXrdnEnkZoMyMzAtCH1Bmes/export?format=csv&gid=1435096533',
 ];
 
 // 預設圖片庫 (根據分類分配)
@@ -116,8 +116,23 @@ const parseCSV = (url: string): Promise<Article[]> => {
         // 引號處理，因為 Content 欄位可能包含引號和換行
         quoteChar: '"',
         escapeChar: '"',
+        // 確保正確處理包含換行符的欄位
         complete: (results: any) => {
           console.log(`CSV Parse Results from ${url}:`, results.data.length, 'rows');
+          
+          // Debug: 檢查 Content 欄位是否正確讀取
+          if (results.data && results.data.length > 0) {
+            const firstRowWithContent = results.data.find((row: any) => row['Content'] && row['Content'].toString().trim().length > 0);
+            if (firstRowWithContent) {
+              const contentLength = firstRowWithContent['Content'].toString().length;
+              console.log(`✅ Content 欄位已讀取，長度: ${contentLength} 字元`);
+              if (contentLength < 500) {
+                console.warn(`⚠️ Content 欄位長度較短 (${contentLength} 字元)，可能只包含摘要`);
+              }
+            } else {
+              console.warn(`⚠️ 沒有找到包含 Content 的資料列`);
+            }
+          }
           
           const articles: Article[] = results.data
             .filter((row: any) => {
