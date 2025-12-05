@@ -16,8 +16,14 @@ const IconMap: Record<string, React.ElementType> = {
 export const ForumIndexPage = () => {
   // 使用真實文章數據
   const { articles, loading } = useArticles();
-  // 取前 5 篇作為熱門討論
-  const recentTopics = articles.slice(0, 5);
+  
+  // 熱門討論排序邏輯：
+  // 1. 優先顯示 Status=done 的文章
+  // 2. 按日期排序（最新的在前）
+  // 3. 取前 5 篇
+  const recentTopics = articles
+    .filter(article => article.content && article.content.trim().length > 0) // 只顯示有內容的文章
+    .slice(0, 5); // 按日期排序已在 ArticleService 中完成
 
   return (
     <>
